@@ -1,0 +1,194 @@
+{
+  "model_sha256": "af197ab9e8e5df98a54bbb4f26f844d70b9161411faaaa6c8532556d8f70bf6b",
+  "pooled": {
+    "standard/train/neural": {
+      "count": 96,
+      "top1": 1.0,
+      "top3": 1.0,
+      "top5": 1.0,
+      "family_top1": 1.0
+    },
+    "standard/train/baseline": {
+      "count": 96,
+      "top1": 0.4166666666666667,
+      "top3": 0.7708333333333334,
+      "top5": 0.875,
+      "family_top1": 0.6458333333333334
+    },
+    "standard/unseen_family/neural": {
+      "count": 48,
+      "top1": 1.0,
+      "top3": 1.0,
+      "top5": 1.0,
+      "family_top1": 1.0
+    },
+    "standard/unseen_family/baseline": {
+      "count": 48,
+      "top1": 0.5208333333333334,
+      "top3": 0.8333333333333334,
+      "top5": 0.8958333333333334,
+      "family_top1": 0.75
+    },
+    "shifted_degradation/train/neural": {
+      "count": 96,
+      "top1": 0.8020833333333334,
+      "top3": 0.9895833333333334,
+      "top5": 1.0,
+      "family_top1": 0.8020833333333334
+    },
+    "shifted_degradation/train/baseline": {
+      "count": 96,
+      "top1": 0.13541666666666666,
+      "top3": 0.25,
+      "top5": 0.4375,
+      "family_top1": 0.3854166666666667
+    },
+    "shifted_degradation/unseen_family/neural": {
+      "count": 48,
+      "top1": 0.7291666666666666,
+      "top3": 1.0,
+      "top5": 1.0,
+      "family_top1": 0.7291666666666666
+    },
+    "shifted_degradation/unseen_family/baseline": {
+      "count": 48,
+      "top1": 0.125,
+      "top3": 0.2708333333333333,
+      "top5": 0.375,
+      "family_top1": 0.5208333333333334
+    }
+  },
+  "random_encoder": {
+    "standard/train": {
+      "count": 576,
+      "top1": 0.2795138888888889,
+      "top3": 0.4461805555555556,
+      "top5": 0.5659722222222222,
+      "family_top1": 0.375
+    },
+    "standard/unseen_family": {
+      "count": 288,
+      "top1": 0.2777777777777778,
+      "top3": 0.4652777777777778,
+      "top5": 0.5555555555555556,
+      "family_top1": 0.4166666666666667
+    },
+    "shifted_degradation/train": {
+      "count": 576,
+      "top1": 0.0798611111111111,
+      "top3": 0.1423611111111111,
+      "top5": 0.2673611111111111,
+      "family_top1": 0.1840277777777778
+    },
+    "shifted_degradation/unseen_family": {
+      "count": 288,
+      "top1": 0.05555555555555555,
+      "top3": 0.21180555555555555,
+      "top5": 0.2638888888888889,
+      "family_top1": 0.2013888888888889
+    }
+  },
+  "cairo": {
+    "hinted=False/train": {
+      "neural": {
+        "count": 288,
+        "top1": 0.9791666666666666,
+        "top3": 1.0,
+        "top5": 1.0,
+        "family_top1": 0.9791666666666666
+      },
+      "baseline": {
+        "count": 288,
+        "top1": 0.2708333333333333,
+        "top3": 0.5347222222222222,
+        "top5": 0.75,
+        "family_top1": 0.4756944444444444
+      },
+      "random_encoder": {
+        "count": 288,
+        "top1": 0.3784722222222222,
+        "top3": 0.6215277777777778,
+        "top5": 0.7361111111111112,
+        "family_top1": 0.46875
+      }
+    },
+    "hinted=False/unseen_family": {
+      "neural": {
+        "count": 144,
+        "top1": 0.8194444444444444,
+        "top3": 1.0,
+        "top5": 1.0,
+        "family_top1": 0.8194444444444444
+      },
+      "baseline": {
+        "count": 144,
+        "top1": 0.3680555555555556,
+        "top3": 0.6736111111111112,
+        "top5": 0.7847222222222222,
+        "family_top1": 0.5277777777777778
+      },
+      "random_encoder": {
+        "count": 144,
+        "top1": 0.4791666666666667,
+        "top3": 0.6805555555555556,
+        "top5": 0.7708333333333334,
+        "family_top1": 0.5902777777777778
+      }
+    },
+    "hinted=True/train": {
+      "neural": {
+        "count": 288,
+        "top1": 0.9652777777777778,
+        "top3": 1.0,
+        "top5": 1.0,
+        "family_top1": 0.9652777777777778
+      },
+      "baseline": {
+        "count": 288,
+        "top1": 0.3263888888888889,
+        "top3": 0.6180555555555556,
+        "top5": 0.75,
+        "family_top1": 0.5520833333333334
+      },
+      "random_encoder": {
+        "count": 288,
+        "top1": 0.3888888888888889,
+        "top3": 0.6215277777777778,
+        "top5": 0.7326388888888888,
+        "family_top1": 0.5347222222222222
+      }
+    },
+    "hinted=True/unseen_family": {
+      "neural": {
+        "count": 144,
+        "top1": 0.8263888888888888,
+        "top3": 0.9930555555555556,
+        "top5": 1.0,
+        "family_top1": 0.8263888888888888
+      },
+      "baseline": {
+        "count": 144,
+        "top1": 0.3472222222222222,
+        "top3": 0.6666666666666666,
+        "top5": 0.7847222222222222,
+        "family_top1": 0.4861111111111111
+      },
+      "random_encoder": {
+        "count": 144,
+        "top1": 0.4236111111111111,
+        "top3": 0.5833333333333334,
+        "top5": 0.6597222222222222,
+        "family_top1": 0.4930555555555556
+      }
+    }
+  },
+  "cairo_provenance": {
+    "source_sha256": "5dfac9e47d28f995f0f9ac2ff09f4ef2ac24dcbb1b8da8ccf2389d6926389b57",
+    "binary_sha256": "a5629ea1e7d100cc26d5e6b079f3467379501d3b097b51b507fd745425874756",
+    "versions": [
+      "1.18.6",
+      "26.6.20"
+    ],
+    "scope": "Cairo show_text, exact font files, no shaping beyond Cairo toy text API; clean raster images"
+  }
+}

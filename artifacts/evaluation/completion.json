@@ -1,0 +1,27 @@
+{
+  "objective": "Implement an unredaction tool that beats the existing projects out there.",
+  "requirements_verified": 11,
+  "evidence_files": 55,
+  "status": "verified_complete",
+  "full_language_cases": 384,
+  "actual_language_cli_reports": 552,
+  "full_pixelation_cases": 768,
+  "actual_pixelation_cli_reports": 1890,
+  "neutral_native_replays": 384,
+  "requested_neural_cli_verified": true,
+  "rust_tests": 122,
+  "clippy_pass": true,
+  "release_build_pass": true,
+  "clean_baseline_pins": {
+    "baseline-alex": "196cc322d980666782e23a6e26aba9712ca4c6d1",
+    "baseline-morten": "d00be632aa463355ec72158244e340310eba7253"
+  },
+  "requirements_sha256": "020edfd35efbb2a4b27bcbd6844f884e6722c44fcb44178eea0f541ebd07f94b",
+  "outcome": "All requested implementation features verified; fixed pipeline demonstrates held-out outperformance over both declared named baseline controls. Known scope and context/absence failures are retained and published.",
+  "limits": [
+    "Government English printed-text sample; no measured real Epsteins-file hidden-name recovery rate.",
+    "Supplied-answer candidate vocabularies and manually supplied mask locations; open-vocabulary recall and automated localization are separate problems.",
+    "No calibrated identity or absent-truth posterior.",
+    "Handwriting, arbitrary redactor padding, unknown/mixed fonts and post-pixelation resampling need broader validation."
+  ]
+}

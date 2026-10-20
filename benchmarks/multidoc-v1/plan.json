@@ -1,0 +1,125 @@
+{
+  "schema_version": 1,
+  "seed": 902641,
+  "dpi": 240,
+  "pages_per_document": 3,
+  "spans_per_page": 8,
+  "max_pages_examined": 8,
+  "candidate_count": 300,
+  "conditions": [
+    "opaque",
+    "opaque-low-resolution",
+    "opaque-jpeg-noise",
+    "opaque-subpixel",
+    "pixelate-8",
+    "pixelate-16"
+  ],
+  "documents": [
+    {
+      "id": "nist-ai",
+      "kind": "clean",
+      "split": "test",
+      "url": "https://nvlpubs.nist.gov/nistpubs/ai/nist.ai.100-1.pdf",
+      "group": "nist-ai"
+    },
+    {
+      "id": "nist-privacy",
+      "kind": "clean",
+      "split": "development",
+      "url": "https://nvlpubs.nist.gov/nistpubs/CSWP/NIST.CSWP.01162020.pdf",
+      "group": "nist-privacy"
+    },
+    {
+      "id": "census-poverty",
+      "kind": "clean",
+      "split": "test",
+      "url": "https://www2.census.gov/library/publications/2024/demo/acsbr-022.pdf",
+      "group": "census-poverty"
+    },
+    {
+      "id": "census-income",
+      "kind": "clean",
+      "split": "development",
+      "url": "https://www2.census.gov/library/publications/2024/demo/acsbr-023.pdf",
+      "group": "census-income"
+    },
+    {
+      "id": "usgs-water-use",
+      "kind": "clean",
+      "split": "test",
+      "url": "https://pubs.usgs.gov/sir/2006/5154/pdf/sir20065154.pdf",
+      "group": "usgs-water-use"
+    },
+    {
+      "id": "usgs-impact",
+      "kind": "clean",
+      "split": "test",
+      "url": "https://pubs.usgs.gov/pp/2005/1688/ak/PP1688_chapC.pdf",
+      "group": "usgs-impact"
+    },
+    {
+      "id": "nasa-propulsion",
+      "kind": "scan",
+      "split": "test",
+      "url": "https://ntrs.nasa.gov/api/citations/19730011150/downloads/19730011150.pdf",
+      "group": "nasa-propulsion"
+    },
+    {
+      "id": "nasa-radiation",
+      "kind": "scan",
+      "split": "development",
+      "url": "https://ntrs.nasa.gov/api/citations/19730010172/downloads/19730010172.pdf",
+      "group": "nasa-radiation"
+    },
+    {
+      "id": "congress-1964",
+      "kind": "scan",
+      "split": "test",
+      "url": "https://www.govinfo.gov/content/pkg/GPO-CRECB-1964-pt1/pdf/GPO-CRECB-1964-pt1-2.pdf",
+      "group": "congress-1964"
+    },
+    {
+      "id": "congress-1970",
+      "kind": "scan",
+      "split": "test",
+      "url": "https://www.govinfo.gov/content/pkg/GPO-CRECB-1970-pt24/pdf/GPO-CRECB-1970-pt24-5-3.pdf",
+      "group": "congress-1970"
+    },
+    {
+      "id": "usgs-definitions",
+      "kind": "scan",
+      "split": "development",
+      "url": "https://pubs.usgs.gov/wsp/1541a/report.pdf",
+      "group": "usgs-definitions"
+    },
+    {
+      "id": "usgs-weaverville",
+      "kind": "scan",
+      "split": "test",
+      "url": "https://pubs.usgs.gov/bul/0540a/report.pdf",
+      "group": "usgs-weaverville"
+    }
+  ],
+  "selection": "Page hash order; exclude first page; inspect at most 8 pages per source, retain first 3 with >=60 OCR words and >=8 eligible disjoint spans. Four one-word and four two-word spans per page, ASCII letters 3..18 per word, original OCR confidence >=85, no crossing line or gutter, hash order. All shortages and exclusions recorded. Labels require visual review; never replace based on solver outcome.",
+  "labels": "Clean: native text matched by coordinates to fresh OCR. Scan: original-image OCR proposals, manually reviewed against saved contact sheets; not ground truth before review.",
+  "split_policy": "Source documents and all their pages/variants stay together; exact PDF and rendered page duplicates rejected; near-duplicate/related editions require manual grouping before freeze. Public pretrained-model exposure remains possible.",
+  "evaluation": "Report by split, source kind, condition, candidate availability and source document. Macro-average documents; paired document bootstrap (10000 draws). Failures count as incorrect; missing executions make report incomplete. Variants are repeated measurements, not independent samples. No threshold/model tuning on test results.",
+  "scope": "Known mask locations, raster inputs, ordinary visible words and same-line two-word spans. Native PDFs are sources of truth, not inputs to raster adapters. English government publication sample, not a representative sample of all redactions. Separate pixelation protocol uses mask-only approximate origin/baseline, no hidden text typography. Existing cases are development data.",
+  "amendments": [
+    {
+      "reason": "GAO source URLs return HTTP403; replacements chosen before extraction or scoring",
+      "replacements": [
+        [
+          "gao-performance",
+          "usgs-water-use",
+          "https://pubs.usgs.gov/sir/2006/5154/pdf/sir20065154.pdf"
+        ],
+        [
+          "gao-financial",
+          "usgs-impact",
+          "https://pubs.usgs.gov/pp/2005/1688/ak/PP1688_chapC.pdf"
+        ]
+      ]
+    }
+  ]
+}

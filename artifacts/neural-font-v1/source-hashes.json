@@ -1,0 +1,9 @@
+{
+  "scripts/neural/README.md": "4cfba19d03981dfff3e067b9ac5f9cbfed5cc388aea012ef29eb32e210af1b29",
+  "scripts/neural/evaluate_extra.py": "57bb74f527a50abde352a3570f47150635f95813c05474aab0315eeb59aa9c71",
+  "scripts/neural/infer.py": "6c424cffcf15b4ca3f6a93cae13f495b0cd7a7dbcb86abbd2650459a92e814f5",
+  "scripts/neural/render_cairo.c": "5dfac9e47d28f995f0f9ac2ff09f4ef2ac24dcbb1b8da8ccf2389d6926389b57",
+  "scripts/neural/test_neural.py": "f07eb1c06f85c626761d8ad7447d6ff001b7bc53df476382e3fcec50a22f69b9",
+  "scripts/neural/train.py": "dcfe390edf270599c0380641783af1c4a341b3fc6502d2057183142f2b844a17",
+  "scripts/neural/typography.py": "5c9b3071a1bdaa4fcc32b21bcafd099392256d5367277dea733471939f7c69a6"
+}

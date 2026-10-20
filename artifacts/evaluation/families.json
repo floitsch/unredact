@@ -1,0 +1,582 @@
+{
+  "schema_version": 1,
+  "plan": {
+    "schema_version": 1,
+    "document_families": {
+      "nist-ai": "NIST",
+      "census-poverty": "Census",
+      "usgs-water-use": "USGS",
+      "usgs-impact": "USGS",
+      "nasa-propulsion": "NASA",
+      "congress-1964": "Congressional Record",
+      "congress-1970": "Congressional Record",
+      "usgs-weaverville": "USGS"
+    },
+    "registered_before_complete_reports": true,
+    "partial_accuracy_not_inspected": true,
+    "primary": "Keep existing case/document metrics and registered primary methods unchanged.",
+    "secondary": "Report equally weighted publisher-family means and10000 fixed-seed family-cluster bootstrap intervals, paired differences. Five publisher groups, not eight independent publishing traditions. Descriptive sensitivity only; no method selection or test-driven tuning.",
+    "bootstrap_seed": 41762,
+    "bootstrap_draws": 10000,
+    "opaque_primary": "local-profile-cost-weight-1",
+    "pixelation_primary": "shared_cells",
+    "sources": [
+      "runs/heldout-opaque-001",
+      "runs/heldout-pixelation-001"
+    ]
+  },
+  "plan_sha256": "2e37853ddcd1db5da4491b6baa798b2aa6fb94bf988c97b604c30417af161e4e",
+  "script_sha256": "98faa871019f3d176ad09533fc681f90d4a9396bcaa79310425968aecb00c51e",
+  "sources": {
+    "geometry": {
+      "path": "/home/flo/programming/unredact/runs/heldout-opaque-001/geometry-summary.json",
+      "sha256": "eadbf4bb065fc6ce2a986abdf81c8e7aa60c1d16ad1762d90c257b673ea39c5d"
+    },
+    "language": {
+      "path": "/home/flo/programming/unredact/runs/heldout-opaque-001/language-evaluation/summary.json",
+      "sha256": "b546895f50bce92140057ab0d4d13b0e79dc404d60b363bd2a62d7fae7c7de74"
+    },
+    "pixelation": {
+      "path": "/home/flo/programming/unredact/runs/heldout-pixelation-001/evaluation/summary.json",
+      "sha256": "9520a40ecdaf13ed0ff8638021ba48d47cbdb9b15a14b40f505e255567e0982d"
+    }
+  },
+  "geometry": {
+    "metrics": [
+      {
+        "condition": "opaque",
+        "track": "alex-matched-catalog-wide-adaptation",
+        "cases": 192,
+        "documents": 8,
+        "families": 5,
+        "statuses": {
+          "ok": 191,
+          "error": 1
+        },
+        "family_cases": {
+          "Census": 24,
+          "Congressional Record": 48,
+          "NASA": 24,
+          "NIST": 24,
+          "USGS": 72
+        },
+        "family_means": {
+          "Census": 0.041666666666666664,
+          "Congressional Record": 0.0,
+          "NASA": 0.0,
+          "NIST": 0.041666666666666664,
+          "USGS": 0.041666666666666664
+        },
+        "family_macro_first": 0.024999999999999998,
+        "family_95_interval": [
+          0.008333333333333333,
+          0.041666666666666664
+        ]
+      },
+      {
+        "condition": "opaque",
+        "track": "local-profile-cost",
+        "cases": 192,
+        "documents": 8,
+        "families": 5,
+        "statuses": {
+          "ok": 192
+        },
+        "family_cases": {
+          "Census": 24,
+          "Congressional Record": 48,
+          "NASA": 24,
+          "NIST": 24,
+          "USGS": 72
+        },
+        "family_means": {
+          "Census": 0.0,
+          "Congressional Record": 0.0,
+          "NASA": 0.0,
+          "NIST": 0.041666666666666664,
+          "USGS": 0.013888888888888888
+        },
+        "family_macro_first": 0.01111111111111111,
+        "family_95_interval": [
+          0.0,
+          0.027777777777777773
+        ]
+      },
+      {
+        "condition": "opaque",
+        "track": "morten-matched-catalog-adaptation",
+        "cases": 192,
+        "documents": 8,
+        "families": 5,
+        "statuses": {
+          "ok": 192
+        },
+        "family_cases": {
+          "Census": 24,
+          "Congressional Record": 48,
+          "NASA": 24,
+          "NIST": 24,
+          "USGS": 72
+        },
+        "family_means": {
+          "Census": 0.0,
+          "Congressional Record": 0.041666666666666664,
+          "NASA": 0.0,
+          "NIST": 0.08333333333333333,
+          "USGS": 0.06944444444444445
+        },
+        "family_macro_first": 0.03888888888888889,
+        "family_95_interval": [
+          0.008333333333333333,
+          0.06944444444444445
+        ]
+      }
+    ],
+    "paired": [
+      {
+        "condition": "opaque",
+        "first": "local-profile-cost",
+        "second": "alex-matched-catalog-wide-adaptation",
+        "status": "ok",
+        "families": 5,
+        "family_macro_difference": -0.013888888888888888,
+        "family_95_interval": [
+          -0.03055555555555555,
+          0.0
+        ]
+      },
+      {
+        "condition": "opaque",
+        "first": "local-profile-cost",
+        "second": "morten-matched-catalog-adaptation",
+        "status": "ok",
+        "families": 5,
+        "family_macro_difference": -0.027777777777777776,
+        "family_95_interval": [
+          -0.04722222222222222,
+          -0.008333333333333333
+        ]
+      }
+    ]
+  },
+  "language": {
+    "metrics": [
+      {
+        "condition": "opaque",
+        "track": "alex-matched-catalog-wide-adaptation",
+        "cases": 192,
+        "documents": 8,
+        "families": 5,
+        "statuses": {
+          "error": 55,
+          "ok": 137
+        },
+        "family_cases": {
+          "Census": 24,
+          "Congressional Record": 48,
+          "NASA": 24,
+          "NIST": 24,
+          "USGS": 72
+        },
+        "family_means": {
+          "Census": 0.4583333333333333,
+          "Congressional Record": 0.0,
+          "NASA": 0.20833333333333334,
+          "NIST": 0.4166666666666667,
+          "USGS": 0.2777777777777778
+        },
+        "family_macro_first": 0.27222222222222225,
+        "family_95_interval": [
+          0.125,
+          0.40555555555555556
+        ]
+      },
+      {
+        "condition": "opaque",
+        "track": "language-only",
+        "cases": 192,
+        "documents": 8,
+        "families": 5,
+        "statuses": {
+          "error": 54,
+          "ok": 138
+        },
+        "family_cases": {
+          "Census": 24,
+          "Congressional Record": 48,
+          "NASA": 24,
+          "NIST": 24,
+          "USGS": 72
+        },
+        "family_means": {
+          "Census": 0.6666666666666666,
+          "Congressional Record": 0.0,
+          "NASA": 0.4583333333333333,
+          "NIST": 0.5,
+          "USGS": 0.4166666666666667
+        },
+        "family_macro_first": 0.4083333333333333,
+        "family_95_interval": [
+          0.18333333333333335,
+          0.575
+        ]
+      },
+      {
+        "condition": "opaque",
+        "track": "local-profile-cost-weight-0",
+        "cases": 192,
+        "documents": 8,
+        "families": 5,
+        "statuses": {
+          "error": 54,
+          "ok": 138
+        },
+        "family_cases": {
+          "Census": 24,
+          "Congressional Record": 48,
+          "NASA": 24,
+          "NIST": 24,
+          "USGS": 72
+        },
+        "family_means": {
+          "Census": 0.7083333333333334,
+          "Congressional Record": 0.0,
+          "NASA": 0.5833333333333334,
+          "NIST": 0.7083333333333334,
+          "USGS": 0.5277777777777778
+        },
+        "family_macro_first": 0.5055555555555555,
+        "family_95_interval": [
+          0.24722222222222223,
+          0.6833333333333333
+        ]
+      },
+      {
+        "condition": "opaque",
+        "track": "local-profile-cost-weight-1",
+        "cases": 192,
+        "documents": 8,
+        "families": 5,
+        "statuses": {
+          "error": 54,
+          "ok": 138
+        },
+        "family_cases": {
+          "Census": 24,
+          "Congressional Record": 48,
+          "NASA": 24,
+          "NIST": 24,
+          "USGS": 72
+        },
+        "family_means": {
+          "Census": 0.75,
+          "Congressional Record": 0.0,
+          "NASA": 0.625,
+          "NIST": 0.7083333333333334,
+          "USGS": 0.5555555555555556
+        },
+        "family_macro_first": 0.5277777777777778,
+        "family_95_interval": [
+          0.25277777777777777,
+          0.7083333333333334
+        ]
+      },
+      {
+        "condition": "opaque",
+        "track": "morten-matched-catalog-adaptation",
+        "cases": 192,
+        "documents": 8,
+        "families": 5,
+        "statuses": {
+          "not_available": 192
+        },
+        "family_cases": {
+          "Census": 24,
+          "Congressional Record": 48,
+          "NASA": 24,
+          "NIST": 24,
+          "USGS": 72
+        },
+        "family_means": null,
+        "family_macro_first": null,
+        "family_95_interval": null
+      }
+    ],
+    "paired": [
+      {
+        "condition": "opaque",
+        "first": "local-profile-cost-weight-1",
+        "second": "alex-matched-catalog-wide-adaptation",
+        "status": "ok",
+        "families": 5,
+        "family_macro_difference": 0.25555555555555554,
+        "family_95_interval": [
+          0.11666666666666667,
+          0.3638888888888888
+        ]
+      },
+      {
+        "condition": "opaque",
+        "first": "local-profile-cost-weight-1",
+        "second": "language-only",
+        "status": "ok",
+        "families": 5,
+        "family_macro_difference": 0.11944444444444446,
+        "family_95_interval": [
+          0.050000000000000024,
+          0.1777777777777778
+        ]
+      },
+      {
+        "condition": "opaque",
+        "first": "local-profile-cost-weight-1",
+        "second": "local-profile-cost-weight-0",
+        "status": "ok",
+        "families": 5,
+        "family_macro_difference": 0.02222222222222221,
+        "family_95_interval": [
+          0.005555555555555558,
+          0.03888888888888886
+        ]
+      },
+      {
+        "condition": "opaque",
+        "first": "local-profile-cost-weight-1",
+        "second": "morten-matched-catalog-adaptation",
+        "status": "not_available",
+        "reason": "One method does not expose this comparison; no families omitted"
+      }
+    ]
+  },
+  "pixelation": {
+    "metrics": [
+      {
+        "condition": "pixelate-16",
+        "track": "legacy",
+        "cases": 192,
+        "documents": 8,
+        "families": 5,
+        "statuses": {
+          "error": 182,
+          "ok": 10
+        },
+        "family_cases": {
+          "Census": 24,
+          "Congressional Record": 48,
+          "NASA": 24,
+          "NIST": 24,
+          "USGS": 72
+        },
+        "family_means": {
+          "Census": 0.0,
+          "Congressional Record": 0.0,
+          "NASA": 0.0,
+          "NIST": 0.0,
+          "USGS": 0.0
+        },
+        "family_macro_first": 0.0,
+        "family_95_interval": [
+          0.0,
+          0.0
+        ]
+      },
+      {
+        "condition": "pixelate-16",
+        "track": "shared_cells",
+        "cases": 192,
+        "documents": 8,
+        "families": 5,
+        "statuses": {
+          "ok": 192
+        },
+        "family_cases": {
+          "Census": 24,
+          "Congressional Record": 48,
+          "NASA": 24,
+          "NIST": 24,
+          "USGS": 72
+        },
+        "family_means": {
+          "Census": 0.20833333333333334,
+          "Congressional Record": 0.041666666666666664,
+          "NASA": 0.5416666666666666,
+          "NIST": 0.9166666666666666,
+          "USGS": 0.625
+        },
+        "family_macro_first": 0.4666666666666667,
+        "family_95_interval": [
+          0.19166666666666668,
+          0.7249999999999999
+        ]
+      },
+      {
+        "condition": "pixelate-16",
+        "track": "unit",
+        "cases": 192,
+        "documents": 8,
+        "families": 5,
+        "statuses": {
+          "ok": 192
+        },
+        "family_cases": {
+          "Census": 24,
+          "Congressional Record": 48,
+          "NASA": 24,
+          "NIST": 24,
+          "USGS": 72
+        },
+        "family_means": {
+          "Census": 0.20833333333333334,
+          "Congressional Record": 0.08333333333333333,
+          "NASA": 0.4583333333333333,
+          "NIST": 0.9166666666666666,
+          "USGS": 0.6388888888888888
+        },
+        "family_macro_first": 0.4611111111111111,
+        "family_95_interval": [
+          0.20833333333333334,
+          0.7194444444444443
+        ]
+      },
+      {
+        "condition": "pixelate-8",
+        "track": "legacy",
+        "cases": 192,
+        "documents": 8,
+        "families": 5,
+        "statuses": {
+          "ok": 167,
+          "error": 25
+        },
+        "family_cases": {
+          "Census": 24,
+          "Congressional Record": 48,
+          "NASA": 24,
+          "NIST": 24,
+          "USGS": 72
+        },
+        "family_means": {
+          "Census": 0.2916666666666667,
+          "Congressional Record": 0.041666666666666664,
+          "NASA": 0.16666666666666666,
+          "NIST": 0.5,
+          "USGS": 0.25
+        },
+        "family_macro_first": 0.25,
+        "family_95_interval": [
+          0.125,
+          0.39166666666666666
+        ]
+      },
+      {
+        "condition": "pixelate-8",
+        "track": "shared_cells",
+        "cases": 192,
+        "documents": 8,
+        "families": 5,
+        "statuses": {
+          "ok": 192
+        },
+        "family_cases": {
+          "Census": 24,
+          "Congressional Record": 48,
+          "NASA": 24,
+          "NIST": 24,
+          "USGS": 72
+        },
+        "family_means": {
+          "Census": 0.375,
+          "Congressional Record": 0.2708333333333333,
+          "NASA": 0.8333333333333334,
+          "NIST": 0.9166666666666666,
+          "USGS": 0.7222222222222222
+        },
+        "family_macro_first": 0.6236111111111111,
+        "family_95_interval": [
+          0.4027777777777778,
+          0.8444444444444444
+        ]
+      },
+      {
+        "condition": "pixelate-8",
+        "track": "unit",
+        "cases": 192,
+        "documents": 8,
+        "families": 5,
+        "statuses": {
+          "ok": 192
+        },
+        "family_cases": {
+          "Census": 24,
+          "Congressional Record": 48,
+          "NASA": 24,
+          "NIST": 24,
+          "USGS": 72
+        },
+        "family_means": {
+          "Census": 0.375,
+          "Congressional Record": 0.3333333333333333,
+          "NASA": 0.7083333333333334,
+          "NIST": 0.9166666666666666,
+          "USGS": 0.7083333333333334
+        },
+        "family_macro_first": 0.6083333333333334,
+        "family_95_interval": [
+          0.4166666666666667,
+          0.7916666666666667
+        ]
+      }
+    ],
+    "paired": [
+      {
+        "condition": "pixelate-16",
+        "first": "shared_cells",
+        "second": "legacy",
+        "status": "ok",
+        "families": 5,
+        "family_macro_difference": 0.4666666666666667,
+        "family_95_interval": [
+          0.19166666666666668,
+          0.7249999999999999
+        ]
+      },
+      {
+        "condition": "pixelate-16",
+        "first": "shared_cells",
+        "second": "unit",
+        "status": "ok",
+        "families": 5,
+        "family_macro_difference": 0.005555555555555562,
+        "family_95_interval": [
+          -0.025,
+          0.04722222222222222
+        ]
+      },
+      {
+        "condition": "pixelate-8",
+        "first": "shared_cells",
+        "second": "legacy",
+        "status": "ok",
+        "families": 5,
+        "family_macro_difference": 0.3736111111111111,
+        "family_95_interval": [
+          0.19027777777777777,
+          0.5402777777777779
+        ]
+      },
+      {
+        "condition": "pixelate-8",
+        "first": "shared_cells",
+        "second": "unit",
+        "status": "ok",
+        "families": 5,
+        "family_macro_difference": 0.015277777777777769,
+        "family_95_interval": [
+          -0.03472222222222223,
+          0.075
+        ]
+      }
+    ]
+  },
+  "interpretation": "Secondary registered sensitivity: each publisher family receives equal weight. Conditions remain separate; all planned failures retained. Five sampled families do not represent all document producers. Original case/document estimates are unchanged. Missing compatibility APIs remain unavailable. Public-document pretrained exposure is unknown."
+}

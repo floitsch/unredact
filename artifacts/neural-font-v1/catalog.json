@@ -1,0 +1,290 @@
+[
+  {
+    "id": "LiberationSerif-Regular",
+    "family": "LiberationSerif",
+    "style": "Regular",
+    "path": "/usr/share/fonts/liberation/LiberationSerif-Regular.ttf",
+    "sha256": "86b9ea1c2f41bed9d7c09ccad4abc2894b33df5de60e5bbbece5d48610911870",
+    "split": "train"
+  },
+  {
+    "id": "LiberationSerif-Bold",
+    "family": "LiberationSerif",
+    "style": "Bold",
+    "path": "/usr/share/fonts/liberation/LiberationSerif-Bold.ttf",
+    "sha256": "28f2d4300ee366d1ff9ca95df967a27e77987c87857fad0d9c85034405aae39d",
+    "split": "train"
+  },
+  {
+    "id": "LiberationSerif-Italic",
+    "family": "LiberationSerif",
+    "style": "Italic",
+    "path": "/usr/share/fonts/liberation/LiberationSerif-Italic.ttf",
+    "sha256": "c7681827cba3bddb54f4673d0052cb944bdeac0b83c29c238240617e699311da",
+    "split": "train"
+  },
+  {
+    "id": "LiberationSerif-BoldItalic",
+    "family": "LiberationSerif",
+    "style": "BoldItalic",
+    "path": "/usr/share/fonts/liberation/LiberationSerif-BoldItalic.ttf",
+    "sha256": "8de6363e9ca6c1e6f539ab032bd9ad6abfe138638f4fc53f3c26ea788b7724c5",
+    "split": "train"
+  },
+  {
+    "id": "LiberationSans-Regular",
+    "family": "LiberationSans",
+    "style": "Regular",
+    "path": "/usr/share/fonts/liberation/LiberationSans-Regular.ttf",
+    "sha256": "baccc64becc3eb7d104b7c84d99f5314a0a1f896e2b3ea6c2f22fc08d2003bee",
+    "split": "train"
+  },
+  {
+    "id": "LiberationSans-Bold",
+    "family": "LiberationSans",
+    "style": "Bold",
+    "path": "/usr/share/fonts/liberation/LiberationSans-Bold.ttf",
+    "sha256": "769673c4355020b1e28a14c366a152da410ab6b16239fe883ebc35b73624835b",
+    "split": "train"
+  },
+  {
+    "id": "LiberationSans-Italic",
+    "family": "LiberationSans",
+    "style": "Italic",
+    "path": "/usr/share/fonts/liberation/LiberationSans-Italic.ttf",
+    "sha256": "8649cf5f2cbe4727549d78b714a3a7ee540718a13557769c4612fea105294c7e",
+    "split": "train"
+  },
+  {
+    "id": "LiberationSans-BoldItalic",
+    "family": "LiberationSans",
+    "style": "BoldItalic",
+    "path": "/usr/share/fonts/liberation/LiberationSans-BoldItalic.ttf",
+    "sha256": "4b3d18cbd1b8c068115be4072f43418b194994313f47dbfd3588808903a55d34",
+    "split": "train"
+  },
+  {
+    "id": "DejaVuSerif",
+    "family": "DejaVuSerif",
+    "style": "Regular",
+    "path": "/usr/share/fonts/TTF/DejaVuSerif.ttf",
+    "sha256": "ae665174c5b7fdb9b457d112db098cbe651dff847bfcf8bcb711172856d0c6b1",
+    "split": "train"
+  },
+  {
+    "id": "DejaVuSerif-Bold",
+    "family": "DejaVuSerif",
+    "style": "Bold",
+    "path": "/usr/share/fonts/TTF/DejaVuSerif-Bold.ttf",
+    "sha256": "8061b471398f4903262c0050d2c9eeb96a78bdbaee759710fe1cec9386bfbe03",
+    "split": "train"
+  },
+  {
+    "id": "DejaVuSerif-Italic",
+    "family": "DejaVuSerif",
+    "style": "Italic",
+    "path": "/usr/share/fonts/TTF/DejaVuSerif-Italic.ttf",
+    "sha256": "97886f871f0d98bfe6d4eaaab75980f2f6b2ef28d541b50c6216f449001eead2",
+    "split": "train"
+  },
+  {
+    "id": "DejaVuSerif-BoldItalic",
+    "family": "DejaVuSerif",
+    "style": "BoldItalic",
+    "path": "/usr/share/fonts/TTF/DejaVuSerif-BoldItalic.ttf",
+    "sha256": "22c692e9a7d71773a790117994a859961e469b35610b07d9d750c4145d01b34e",
+    "split": "train"
+  },
+  {
+    "id": "DejaVuSans",
+    "family": "DejaVuSans",
+    "style": "Regular",
+    "path": "/usr/share/fonts/TTF/DejaVuSans.ttf",
+    "sha256": "6038a160b491e121c1f12c7bccb4a9c8730296e3adc1086a059404ed84b7451c",
+    "split": "train"
+  },
+  {
+    "id": "DejaVuSans-Bold",
+    "family": "DejaVuSans",
+    "style": "Bold",
+    "path": "/usr/share/fonts/TTF/DejaVuSans-Bold.ttf",
+    "sha256": "b5d64817b6331723b5e59eaaa6db90057cbed58e9733f65687f110638192359f",
+    "split": "train"
+  },
+  {
+    "id": "DejaVuSans-Oblique",
+    "family": "DejaVuSans",
+    "style": "Oblique",
+    "path": "/usr/share/fonts/TTF/DejaVuSans-Oblique.ttf",
+    "sha256": "cf41fd01245e40e783ce3eae0bba5c38927a2497889dde1266d8757b9c84de1a",
+    "split": "train"
+  },
+  {
+    "id": "DejaVuSans-BoldOblique",
+    "family": "DejaVuSans",
+    "style": "BoldOblique",
+    "path": "/usr/share/fonts/TTF/DejaVuSans-BoldOblique.ttf",
+    "sha256": "ec93b91f398f68f5522d227afd5ed8e84b9cb0c6ad56c1172dcb1035a1542a80",
+    "split": "train"
+  },
+  {
+    "id": "Lato-Regular",
+    "family": "Lato",
+    "style": "Regular",
+    "path": "/usr/share/fonts/lato/Lato-Regular.ttf",
+    "sha256": "d636e4683231f931eda222d588e944d082bfd3bdba02f928bee461c0f185b251",
+    "split": "train"
+  },
+  {
+    "id": "Lato-Bold",
+    "family": "Lato",
+    "style": "Bold",
+    "path": "/usr/share/fonts/lato/Lato-Bold.ttf",
+    "sha256": "8a0aace75d33794eece4b28187bfc1df0bbd2888b5d8a56e01788c8d65d16be1",
+    "split": "train"
+  },
+  {
+    "id": "Lato-Italic",
+    "family": "Lato",
+    "style": "Italic",
+    "path": "/usr/share/fonts/lato/Lato-Italic.ttf",
+    "sha256": "e399c44efe1387100531d26c7e4800c5d12251b890d6654a3098c7c679cb1786",
+    "split": "train"
+  },
+  {
+    "id": "Lato-BoldItalic",
+    "family": "Lato",
+    "style": "BoldItalic",
+    "path": "/usr/share/fonts/lato/Lato-BoldItalic.ttf",
+    "sha256": "62c1b7f0d2e74b45960154c3520efc337b553db0961bfdc950d5618334596cc8",
+    "split": "train"
+  },
+  {
+    "id": "Roboto-Regular",
+    "family": "Roboto",
+    "style": "Regular",
+    "path": "/usr/share/fonts/TTF/Roboto-Regular.ttf",
+    "sha256": "9f300202f482ad59f8b13bc3131a295744d14fd530fa3765a0a11ec87264d203",
+    "split": "train"
+  },
+  {
+    "id": "Roboto-Bold",
+    "family": "Roboto",
+    "style": "Bold",
+    "path": "/usr/share/fonts/TTF/Roboto-Bold.ttf",
+    "sha256": "44f13e570a8b3fc42240abfcb3d72fe298f3dd6a25db0c78d0c2495dbd0e9121",
+    "split": "train"
+  },
+  {
+    "id": "Roboto-Italic",
+    "family": "Roboto",
+    "style": "Italic",
+    "path": "/usr/share/fonts/TTF/Roboto-Italic.ttf",
+    "sha256": "65e58214106ef45173620f4488006d80de2d666c773c4734148e1d41942cc72b",
+    "split": "train"
+  },
+  {
+    "id": "Roboto-BoldItalic",
+    "family": "Roboto",
+    "style": "BoldItalic",
+    "path": "/usr/share/fonts/TTF/Roboto-BoldItalic.ttf",
+    "sha256": "64576192b69a55031a916cbf8b30b74d38093a1a1bcf6e38760b6b8c2126889b",
+    "split": "train"
+  },
+  {
+    "id": "DejaVuSansMono",
+    "family": "DejaVuSansMono",
+    "style": "Regular",
+    "path": "/usr/share/fonts/TTF/DejaVuSansMono.ttf",
+    "sha256": "b5babc084554ebdd142fe099d8b7c573ff161738bca913723d3e84f5c3df1c78",
+    "split": "unseen_family"
+  },
+  {
+    "id": "DejaVuSansMono-Bold",
+    "family": "DejaVuSansMono",
+    "style": "Bold",
+    "path": "/usr/share/fonts/TTF/DejaVuSansMono-Bold.ttf",
+    "sha256": "738db66c1f30008ddc331e46ba373f0b28c9455f54f0174e4aee670d6999193a",
+    "split": "unseen_family"
+  },
+  {
+    "id": "DejaVuSansMono-Oblique",
+    "family": "DejaVuSansMono",
+    "style": "Oblique",
+    "path": "/usr/share/fonts/TTF/DejaVuSansMono-Oblique.ttf",
+    "sha256": "94d1c1b9f930b3d7c81780cd4e70a2f210bc6ba1bc1c4de00774d6ce42944079",
+    "split": "unseen_family"
+  },
+  {
+    "id": "DejaVuSansMono-BoldOblique",
+    "family": "DejaVuSansMono",
+    "style": "BoldOblique",
+    "path": "/usr/share/fonts/TTF/DejaVuSansMono-BoldOblique.ttf",
+    "sha256": "4a6ecb8975cbdc3ec1bf0963a5b285b724937457302539536e848564bec37e79",
+    "split": "unseen_family"
+  },
+  {
+    "id": "NotoSans-Regular",
+    "family": "NotoSans",
+    "style": "Regular",
+    "path": "/usr/share/fonts/noto/NotoSans-Regular.ttf",
+    "sha256": "478c558ea716033cd60c03438f628dfa75694dcf6b5f6d505a2f05fd2b4f3823",
+    "split": "unseen_family"
+  },
+  {
+    "id": "NotoSans-Bold",
+    "family": "NotoSans",
+    "style": "Bold",
+    "path": "/usr/share/fonts/noto/NotoSans-Bold.ttf",
+    "sha256": "1df075a380fc7cb898acf64c1f7b3b4dd780de3caa860178bf929de35817a913",
+    "split": "unseen_family"
+  },
+  {
+    "id": "NotoSans-Italic",
+    "family": "NotoSans",
+    "style": "Italic",
+    "path": "/usr/share/fonts/noto/NotoSans-Italic.ttf",
+    "sha256": "467e3f89eeca4108bb8710a2b9e0cf2281ac56d5b0609211a83776d0505eecb5",
+    "split": "unseen_family"
+  },
+  {
+    "id": "NotoSans-BoldItalic",
+    "family": "NotoSans",
+    "style": "BoldItalic",
+    "path": "/usr/share/fonts/noto/NotoSans-BoldItalic.ttf",
+    "sha256": "1b602a9d6353be42c91df097a4857b69fa2696f26703d7a33b54a15d87c2622c",
+    "split": "unseen_family"
+  },
+  {
+    "id": "Merriweather-Regular",
+    "family": "Merriweather",
+    "style": "Regular",
+    "path": "/usr/share/fonts/TTF/Merriweather-Regular.ttf",
+    "sha256": "a74a8658a74b5da43ddf32e211f4ad96bc0efc7d5cb921f78d3376aa2b8be5fe",
+    "split": "unseen_family"
+  },
+  {
+    "id": "Merriweather-Bold",
+    "family": "Merriweather",
+    "style": "Bold",
+    "path": "/usr/share/fonts/TTF/Merriweather-Bold.ttf",
+    "sha256": "8d2dcbd3041b5eab1739cb00cb58fadfea5c2c2977f410148d8432c471022879",
+    "split": "unseen_family"
+  },
+  {
+    "id": "Merriweather-Italic",
+    "family": "Merriweather",
+    "style": "Italic",
+    "path": "/usr/share/fonts/TTF/Merriweather-Italic.ttf",
+    "sha256": "8969d6b6123e0b3b9e150c4411ac697ab941be075df38680229e2bd685b5691b",
+    "split": "unseen_family"
+  },
+  {
+    "id": "Merriweather-BoldItalic",
+    "family": "Merriweather",
+    "style": "BoldItalic",
+    "path": "/usr/share/fonts/TTF/Merriweather-BoldItalic.ttf",
+    "sha256": "1d9bb02a953dc478f05bcc1ad8776809a8e7ce43f34ed53fb8224000a5163b08",
+    "split": "unseen_family"
+  }
+]

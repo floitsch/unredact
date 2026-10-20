@@ -1,0 +1,6 @@
+/target/
+/runs/
+*.tmp
+__pycache__/
+/baseline-alex/
+/baseline-morten/

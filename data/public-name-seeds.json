@@ -1,0 +1,304 @@
+{
+  "schema_version": 1,
+  "purpose": "Optional source-backed public-role candidate vocabulary for architecture evaluation; not a list of inferred redaction identities.",
+  "collected_by": "GPT-6-Luna sub-agent; edited by parent",
+  "collected_on": "2026-10-19",
+  "notes": [
+    "This is an incomplete starter vocabulary.",
+    "Public roles are historical and scoped to the cited event.",
+    "Source evidence establishes a public role, not the contents of any redaction or wrongdoing.",
+    "Generated initials, surnames, capitalization, and nicknames should be stored as separate surface variants with their derivation; a surname need not identify a unique person.",
+    "No likelihood weights are assigned from inclusion in this list."
+  ],
+  "sources": {
+    "sdny_2019": {
+      "url": "https://www.justice.gov/usao-sdny/pr/jeffrey-epstein-charged-manhattan-federal-court-sex-trafficking-minors",
+      "date": "2019-07-08"
+    },
+    "maxwell_case": {
+      "url": "https://www.justice.gov/usao-sdny/united-states-v-ghislaine-maxwell",
+      "date": null
+    },
+    "opr": {
+      "url": "https://www.justice.gov/archives/opa/pr/statement-doj-office-professional-responsibility-report-jeffrey-epstein-2006-2008",
+      "date": null
+    },
+    "release_2025": {
+      "url": "https://www.justice.gov/opa/pr/attorney-general-pamela-bondi-releases-first-phase-declassified-epstein-files",
+      "date": "2025-02-27"
+    },
+    "production_letter": {
+      "url": "https://www.justice.gov/letter-to-congress.pdf",
+      "date": null
+    },
+    "unsealing_order": {
+      "url": "https://www.nysd.uscourts.gov/sites/default/files/2024-01/15cv7433%2001032023%20115pm%20%281%29.pdf",
+      "date": null
+    },
+    "boies_filing": {
+      "url": "https://www.justice.gov/multimedia/Court%20Records/Giuffre%20v.%20Maxwell%2C%20No.%20115-cv-07433%20%28S.D.N.Y.%202015%29/1335-2.pdf",
+      "date": null
+    },
+    "dershowitz_filing": {
+      "url": "https://www.justice.gov/multimedia/Court%20Records/Giuffre%20v.%20Maxwell%2C%20No.%20115-cv-07433%20%28S.D.N.Y.%202015%29/364.pdf",
+      "date": null
+    }
+  },
+  "candidates": [
+    {
+      "id": "jeffrey_epstein",
+      "canonical_name": "Jeffrey Epstein",
+      "surfaces": [
+        {
+          "text": "Jeffrey Epstein",
+          "kind": "canonical",
+          "source_id": "sdny_2019"
+        }
+      ],
+      "documented_role": "Defendant charged in the 2019 SDNY case.",
+      "context_scope": "2019 prosecution",
+      "source_ids": [
+        "sdny_2019"
+      ],
+      "candidate_status": "seed_only_not_a_redaction_identification"
+    },
+    {
+      "id": "ghislaine_maxwell",
+      "canonical_name": "Ghislaine Maxwell",
+      "surfaces": [
+        {
+          "text": "Ghislaine Maxwell",
+          "kind": "canonical",
+          "source_id": "maxwell_case"
+        }
+      ],
+      "documented_role": "Defendant in United States v. Maxwell.",
+      "context_scope": "Maxwell criminal proceedings",
+      "source_ids": [
+        "maxwell_case"
+      ],
+      "candidate_status": "seed_only_not_a_redaction_identification"
+    },
+    {
+      "id": "alexander_acosta",
+      "canonical_name": "Alexander Acosta",
+      "surfaces": [
+        {
+          "text": "Alexander Acosta",
+          "kind": "canonical",
+          "source_id": "opr"
+        }
+      ],
+      "documented_role": "Former U.S. Attorney involved in the resolution of the 2006–2008 investigation.",
+      "context_scope": "2006–2008 investigation and later review",
+      "source_ids": [
+        "opr"
+      ],
+      "candidate_status": "seed_only_not_a_redaction_identification"
+    },
+    {
+      "id": "geoffrey_berman",
+      "canonical_name": "Geoffrey S. Berman",
+      "surfaces": [
+        {
+          "text": "Geoffrey S. Berman",
+          "kind": "canonical",
+          "source_id": "sdny_2019"
+        }
+      ],
+      "documented_role": "U.S. Attorney who announced the 2019 charges.",
+      "context_scope": "2019 prosecution",
+      "source_ids": [
+        "sdny_2019"
+      ],
+      "candidate_status": "seed_only_not_a_redaction_identification"
+    },
+    {
+      "id": "richard_berman",
+      "canonical_name": "Richard M. Berman",
+      "surfaces": [
+        {
+          "text": "Richard M. Berman",
+          "kind": "canonical",
+          "source_id": "sdny_2019"
+        }
+      ],
+      "documented_role": "District judge assigned to the 2019 case.",
+      "context_scope": "2019 prosecution",
+      "source_ids": [
+        "sdny_2019"
+      ],
+      "candidate_status": "seed_only_not_a_redaction_identification"
+    },
+    {
+      "id": "henry_pitman",
+      "canonical_name": "Henry B. Pitman",
+      "surfaces": [
+        {
+          "text": "Henry B. Pitman",
+          "kind": "canonical",
+          "source_id": "sdny_2019"
+        }
+      ],
+      "documented_role": "Magistrate judge named for the initial appearance.",
+      "context_scope": "2019 prosecution",
+      "source_ids": [
+        "sdny_2019"
+      ],
+      "candidate_status": "seed_only_not_a_redaction_identification"
+    },
+    {
+      "id": "alison_moe",
+      "canonical_name": "Alison Moe",
+      "surfaces": [
+        {
+          "text": "Alison Moe",
+          "kind": "canonical",
+          "source_id": "sdny_2019"
+        }
+      ],
+      "documented_role": "Prosecutor named in the charging announcement.",
+      "context_scope": "2019 prosecution",
+      "source_ids": [
+        "sdny_2019"
+      ],
+      "candidate_status": "seed_only_not_a_redaction_identification"
+    },
+    {
+      "id": "maurene_comey",
+      "canonical_name": "Maurene Comey",
+      "surfaces": [
+        {
+          "text": "Maurene Comey",
+          "kind": "canonical",
+          "source_id": "sdny_2019"
+        }
+      ],
+      "documented_role": "Prosecutor named in the charging announcement.",
+      "context_scope": "2019 prosecution",
+      "source_ids": [
+        "sdny_2019"
+      ],
+      "candidate_status": "seed_only_not_a_redaction_identification"
+    },
+    {
+      "id": "pamela_bondi",
+      "canonical_name": "Pamela Bondi",
+      "surfaces": [
+        {
+          "text": "Pamela Bondi",
+          "kind": "canonical",
+          "source_id": "release_2025"
+        }
+      ],
+      "documented_role": "Attorney General announcing the first-phase release.",
+      "context_scope": "2025 document release",
+      "source_ids": [
+        "release_2025"
+      ],
+      "candidate_status": "seed_only_not_a_redaction_identification"
+    },
+    {
+      "id": "kash_patel",
+      "canonical_name": "Kash Patel",
+      "surfaces": [
+        {
+          "text": "Kash Patel",
+          "kind": "canonical",
+          "source_id": "release_2025"
+        }
+      ],
+      "documented_role": "FBI Director quoted in the first-phase release announcement.",
+      "context_scope": "2025 document release",
+      "source_ids": [
+        "release_2025"
+      ],
+      "candidate_status": "seed_only_not_a_redaction_identification"
+    },
+    {
+      "id": "todd_blanche",
+      "canonical_name": "Todd Blanche",
+      "surfaces": [
+        {
+          "text": "Todd Blanche",
+          "kind": "canonical",
+          "source_id": "production_letter"
+        }
+      ],
+      "documented_role": "Deputy Attorney General signing the production letter.",
+      "context_scope": "2026 document production",
+      "source_ids": [
+        "production_letter"
+      ],
+      "candidate_status": "seed_only_not_a_redaction_identification"
+    },
+    {
+      "id": "loretta_preska",
+      "canonical_name": "Loretta A. Preska",
+      "surfaces": [
+        {
+          "text": "Loretta A. Preska",
+          "kind": "canonical",
+          "source_id": "unsealing_order"
+        }
+      ],
+      "documented_role": "Judge issuing unsealing orders in Giuffre v. Maxwell.",
+      "context_scope": "Civil-case unsealing proceedings",
+      "source_ids": [
+        "unsealing_order"
+      ],
+      "candidate_status": "seed_only_not_a_redaction_identification"
+    },
+    {
+      "id": "alison_nathan",
+      "canonical_name": "Alison J. Nathan",
+      "surfaces": [
+        {
+          "text": "Alison J. Nathan",
+          "kind": "canonical",
+          "source_id": "maxwell_case"
+        }
+      ],
+      "documented_role": "Judge presiding over Maxwell criminal proceedings.",
+      "context_scope": "Maxwell criminal proceedings",
+      "source_ids": [
+        "maxwell_case"
+      ],
+      "candidate_status": "seed_only_not_a_redaction_identification"
+    },
+    {
+      "id": "david_boies",
+      "canonical_name": "David Boies",
+      "surfaces": [
+        {
+          "text": "David Boies",
+          "kind": "canonical",
+          "source_id": "boies_filing"
+        }
+      ],
+      "documented_role": "Plaintiff counsel identified in a deposition transcript.",
+      "context_scope": "Giuffre v. Maxwell civil litigation",
+      "source_ids": [
+        "boies_filing"
+      ],
+      "candidate_status": "seed_only_not_a_redaction_identification"
+    },
+    {
+      "id": "alan_dershowitz",
+      "canonical_name": "Alan Dershowitz",
+      "surfaces": [
+        {
+          "text": "Alan Dershowitz",
+          "kind": "canonical",
+          "source_id": "dershowitz_filing"
+        }
+      ],
+      "documented_role": "Attorney identified as having represented Epstein in a court filing.",
+      "context_scope": "Legal representation referenced in civil litigation",
+      "source_ids": [
+        "dershowitz_filing"
+      ],
+      "candidate_status": "seed_only_not_a_redaction_identification"
+    }
+  ]
+}

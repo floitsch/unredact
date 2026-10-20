@@ -1,0 +1,101 @@
+{
+  "schema_version": 1,
+  "files": {
+    "neural-font-v1/model.pt": {
+      "source_workspace_path": "runs/neural-001/model.pt",
+      "sha256": "af197ab9e8e5df98a54bbb4f26f844d70b9161411faaaa6c8532556d8f70bf6b",
+      "bytes": 382711
+    },
+    "neural-font-v1/manifest.json": {
+      "source_workspace_path": "runs/neural-001/manifest.json",
+      "sha256": "87dd5da841d3e9f7bfe724a31b2df1da8e4f6ffdef18be7a25fc7a190b60395c",
+      "bytes": 12474
+    },
+    "neural-font-v1/catalog.json": {
+      "source_workspace_path": "runs/neural-001/catalog.json",
+      "sha256": "b9db87a9ba940a80ee275c6dd92e45bc0f805f466de61b2b0c8b86befe652706",
+      "bytes": 9327
+    },
+    "neural-font-v1/history.json": {
+      "source_workspace_path": "runs/neural-001/history.json",
+      "sha256": "8b3b1cca66ff45dca7209c39b03a6d329c7c253e336b9048d136b07d94fc3144",
+      "bytes": 6713
+    },
+    "neural-font-v1/evaluation.json": {
+      "source_workspace_path": "runs/neural-001/evaluation.json",
+      "sha256": "8a636f8433f3662346f94c2fa9f24c372d94bf9560cd1f909a54fb0d0b90e80e",
+      "bytes": 1831
+    },
+    "neural-font-v1/evaluation-extra.json": {
+      "source_workspace_path": "runs/neural-001/evaluation-extra.json",
+      "sha256": "0ec1f1319f017b39c01df9a0026a34c32b458c5f5d20514985d087f4a9b636c5",
+      "bytes": 5187
+    },
+    "neural-font-v1/requirements.lock": {
+      "source_workspace_path": "runs/neural-001/requirements.lock",
+      "sha256": "f2a5d3a8ed829698f63036853f7860af3efc2c71fedc03c4c9cb1e2e0b400af1",
+      "bytes": 201
+    },
+    "neural-font-v1/rendering-environment.json": {
+      "source_workspace_path": "runs/neural-001/rendering-environment.json",
+      "sha256": "21df00940293fc6f5964ffd6ccfaec3a552f99a66bfeed3962e209b02fd276d5",
+      "bytes": 635
+    },
+    "neural-font-v1/source-hashes.json": {
+      "source_workspace_path": "runs/neural-001/source-hashes.json",
+      "sha256": "042213165cf793c84f29aafd1186654e7ec0c2b714bbed599715a79499f19f10",
+      "bytes": 708
+    },
+    "evaluation/language.json": {
+      "source_workspace_path": "runs/heldout-ranking-audit-001/final-analysis.json",
+      "sha256": "af3a85b44830b625c3acc79c87f9b4a9c9f8ea4248b96282cfcbca0b3b565597",
+      "bytes": 965226
+    },
+    "evaluation/geometry.json": {
+      "source_workspace_path": "runs/heldout-opaque-001/geometry-summary.json",
+      "sha256": "eadbf4bb065fc6ce2a986abdf81c8e7aa60c1d16ad1762d90c257b673ea39c5d",
+      "bytes": 1108035
+    },
+    "evaluation/native-confidence.json": {
+      "source_workspace_path": "runs/heldout-native-decisions-001/confidence-controls.json",
+      "sha256": "5dd84a4637c3b7ccdbe64906ad4a30763ce7cf26940843c9e395d48154def3bd",
+      "bytes": 633670
+    },
+    "evaluation/native-paired.json": {
+      "source_workspace_path": "runs/heldout-native-analysis-001/paired-analysis.json",
+      "sha256": "f81518f39dc541cfcb83eacabb879e27fd9996f5de0534778522300ad66724f3",
+      "bytes": 255773
+    },
+    "evaluation/families.json": {
+      "source_workspace_path": "runs/heldout-analysis-001/family-sensitivity.json",
+      "sha256": "72edee6a0a23a37cb4a6da2b448e7359d6ad20ab92e8255aa0e88c39d61d181f",
+      "bytes": 15987
+    },
+    "evaluation/pixelation.json": {
+      "source_workspace_path": "runs/heldout-pixelation-001/evaluation/summary.json",
+      "sha256": "9520a40ecdaf13ed0ff8638021ba48d47cbdb9b15a14b40f505e255567e0982d",
+      "bytes": 757478
+    },
+    "evaluation/pixelation-audit.json": {
+      "source_workspace_path": "runs/heldout-pixelation-001/completion-audit.json",
+      "sha256": "15c5ea7ff647b3662e60f323a8fa250984a2550b7b932e81ef1b63a63c517061",
+      "bytes": 428572
+    },
+    "evaluation/completion.json": {
+      "source_workspace_path": "runs/completion-audit-001/final-audit.json",
+      "sha256": "187f9670fea7fde061164c248be16c79e8cadf64a72fa7bc9b1d1a2d0ef39b20",
+      "bytes": 1418
+    },
+    "evaluation/requirements.json": {
+      "source_workspace_path": "runs/completion-audit-001/requirements.json",
+      "sha256": "020edfd35efbb2a4b27bcbd6844f884e6722c44fcb44178eea0f541ebd07f94b",
+      "bytes": 14530
+    },
+    "evaluation/neural-cli-audit.json": {
+      "source_workspace_path": "runs/completion-audit-001/neural-cli/audit.json",
+      "sha256": "a81856a12529db7f659006b40a753f56ca81f2c4e0eb0395332f352cb4f571bf",
+      "bytes": 7754
+    }
+  },
+  "note": "Byte-identical selected model and result artifacts from the original experiment workspace. Embedded source manifests retain original paths. Large datasets, environments, external models, runtime copies and source PDFs are excluded; this is not a complete standalone frozen experiment archive."
+}

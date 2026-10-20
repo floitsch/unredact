@@ -1,0 +1,209 @@
+{
+  "objective": "Implement an unredaction tool that beats the existing projects out there.",
+  "status": "verified_complete",
+  "requirements": [
+    {
+      "id": "rust_spacing_kerning",
+      "status": "implemented_verified",
+      "evidence": [
+        "src/native.rs",
+        "src/calibration.rs",
+        "src/solver.rs",
+        "tests/core.rs"
+      ]
+    },
+    {
+      "id": "luna_relevant_names_and_hook",
+      "status": "implemented_verified",
+      "evidence": [
+        "data/public-name-seeds.json",
+        "src/solver.rs",
+        "runs/completion-audit-001/name-hook-check.json"
+      ],
+      "scope": "15 public-role starter entries, parse/solve integration only; no inferred real redaction identities"
+    },
+    {
+      "id": "ai_next_words_and_free_local_models",
+      "status": "implemented_measured",
+      "evidence": [
+        "src/search.rs",
+        "src/expansion.rs",
+        "scripts/ollama_provider.py",
+        "scripts/span_proposal_provider.py",
+        "scripts/span_context_provider.py",
+        "runs/multidoc-common-language-002/final-analysis.json",
+        "docs/QUICKSTART.md",
+        "runs/heldout-ranking-audit-001/final-analysis.json"
+      ],
+      "scope": "One-shot/incremental proposals and likelihood ranking; no paid API required. Llama/Gemma proposal quality mixed; pinned T5 selected for current ranking comparison."
+    },
+    {
+      "id": "learn_visible_scans",
+      "status": "implemented_measured",
+      "evidence": [
+        "src/calibration.rs",
+        "src/vertical.rs",
+        "src/typography.rs",
+        "runs/vertical-mosaic-development-001/visible-height-summary.json"
+      ],
+      "scope": "Training-only widths/heights, separate validation/audit; no hidden position used"
+    },
+    {
+      "id": "pixel_subpixel_evidence",
+      "status": "implemented_measured",
+      "evidence": [
+        "src/pixelation.rs",
+        "src/shared_grid.rs",
+        "src/mosaic_cells.rs",
+        "src/mosaic_rank.rs",
+        "runs/mosaic-cells-development-001/forward-model-audit.json"
+      ],
+      "scope": "Grayscale/integer-grid forward process, fractional rendering phases and native fractional coordinates; strong post-pixelation blur/noninteger grids remain limited"
+    },
+    {
+      "id": "combine_areas_and_pdfs",
+      "status": "implemented_verified",
+      "evidence": [
+        "src/linking.rs",
+        "src/solver.rs",
+        "src/mosaic_joint.rs",
+        "tests/mosaic_joint.rs",
+        "runs/main-before-joint-pixelation-001/cli-final-replay/summary.json"
+      ],
+      "scope": "Explicit links, nuisance consistency and dependence dedup; general identity-link discovery is not verified"
+    },
+    {
+      "id": "requested_neural_network",
+      "status": "implemented_trained_verified",
+      "evidence": [
+        "scripts/neural/typography.py",
+        "scripts/neural/train.py",
+        "src/neural.rs",
+        "runs/completion-audit-001/neural-artifact-check.json",
+        "runs/completion-audit-001/neural-cli/audit.json"
+      ],
+      "scope": "93016-parameter visible-font CNN; optional. Real-scan accuracy advantage not established; not selected as primary default."
+    },
+    {
+      "id": "renderer_sources_versions",
+      "status": "implemented_verified",
+      "evidence": [
+        "scripts/inspect_renderers.py",
+        "runs/renderer-inspection-003.json"
+      ],
+      "scope": "Clean pinned HarfBuzz/FreeType source releases, installed Cairo/Poppler/FT/HB identities and library hashes. Historical document-producer version reconstruction not claimed."
+    },
+    {
+      "id": "inspect_named_baselines",
+      "status": "implemented_measured",
+      "evidence": [
+        "docs/BASELINE_SOURCE_REVIEW.md",
+        "scripts/adapters/alex_browser.py",
+        "scripts/adapters/morten_unredactron.py",
+        "runs/multidoc-common-language-002/final-analysis.json",
+        "runs/heldout-native-decisions-001/plan.json",
+        "runs/heldout-native-decisions-001/native-decisions.json",
+        "runs/morten-confidence-development-001/confidence-controls.json",
+        "runs/heldout-native-analysis-001/plan.json",
+        "runs/morten-confidence-development-001/paired-analysis.json",
+        "runs/heldout-native-decisions-001/confidence-controls.json",
+        "runs/heldout-native-analysis-001/paired-analysis.json"
+      ],
+      "scope": "Pinned actual upstream geometry, declared catalog adaptations and common-language control. Alex native Claude feature not run; Morten has no built-in LLM reranking."
+    },
+    {
+      "id": "representative_benchmark_expansion",
+      "status": "implemented_verified_completed",
+      "evidence": [
+        "benchmarks/multidoc-v1/plan.json",
+        "docs/BENCHMARK_EXPANSION.md",
+        "runs/heldout-opaque-001/plan.json",
+        "runs/heldout-pixelation-001/plan.json",
+        "runs/heldout-analysis-001/plan.json",
+        "runs/benchmark-generator-coordinate-fix-001/audit.json",
+        "runs/heldout-ranking-audit-001/plan.json",
+        "runs/completion-audit-001/development-cli-rankings.json",
+        "runs/heldout-pixelation-001/completion-audit.json",
+        "runs/heldout-analysis-001/family-sensitivity.json",
+        "runs/heldout-pixelation-001/evaluation/summary.json"
+      ],
+      "scope": "288 spans/12documents,4development+8test. Families remain correlated; registered family sensitivity. Controlled masks/closed candidate lists."
+    },
+    {
+      "id": "outperform_existing_projects",
+      "status": "verified_matched_heldout_outperformance",
+      "evidence": [
+        "runs/heldout-opaque-001/plan.json",
+        "runs/heldout-pixelation-001/plan.json",
+        "runs/heldout-ranking-audit-001/final-analysis.json",
+        "runs/heldout-native-analysis-001/paired-analysis.json",
+        "runs/heldout-analysis-001/family-sensitivity.json",
+        "docs/RESULTS.md"
+      ],
+      "scope": "All original requested app features implemented. Selected fixed Rust/T5 pipeline outperforms both named projects through declared matched controls on192 held-out spans from8 documents, with positive paired document and publisher-family intervals. This is measured superiority under the declared inputs, not a universal unknown-redaction or native Claude claim."
+    }
+  ],
+  "evidence_sha256": {
+    "/home/flo/programming/unredact/benchmarks/multidoc-v1/plan.json": "44d13d73ea46bfad312515c1d32e30604ff998e05580ce88690073c10c5f20a5",
+    "/home/flo/programming/unredact/data/public-name-seeds.json": "54bdc841604427b0c9c7971494986f7a11586f8cb62974e8e2f1222406914b4c",
+    "/home/flo/programming/unredact/docs/BASELINE_SOURCE_REVIEW.md": "f7184dea2d2d84644cb077adadc29e740df03fd92461c8d4f02265e58af783ca",
+    "/home/flo/programming/unredact/docs/BENCHMARK_EXPANSION.md": "0855576bf3cdc64416e3359e610e11d5c2f3cf2de146d87cfa85ad9be8b0ba27",
+    "/home/flo/programming/unredact/docs/QUICKSTART.md": "16a5cee7787ba30766d58d9354da055f017abeb1af36024596607f0fd6bf8fee",
+    "/home/flo/programming/unredact/docs/RESULTS.md": "15f930de546a0ec64097e77a019af717b1afa1c617e5bd6f87250c74a054f7ae",
+    "/home/flo/programming/unredact/runs/benchmark-generator-coordinate-fix-001/audit.json": "d228374c2a9566bb6ab7be0af79fdb76c214f512585df1865d53384ef828d485",
+    "/home/flo/programming/unredact/runs/completion-audit-001/development-cli-rankings.json": "6d3d64c38d958340bedeb11719ef934f42abea237b3130d6082fe0d8484bbddd",
+    "/home/flo/programming/unredact/runs/completion-audit-001/name-hook-check.json": "68cd75eac96c5a0f73a3c4cc2be72ae7512b3724a60936249d2f036e6cabd316",
+    "/home/flo/programming/unredact/runs/completion-audit-001/neural-artifact-check.json": "ec853575421c052c752ee9da6f99c153773e16c987c5e8c77959e4bce31b6bc1",
+    "/home/flo/programming/unredact/runs/completion-audit-001/neural-cli/audit.json": "a81856a12529db7f659006b40a753f56ca81f2c4e0eb0395332f352cb4f571bf",
+    "/home/flo/programming/unredact/runs/heldout-analysis-001/family-sensitivity.json": "72edee6a0a23a37cb4a6da2b448e7359d6ad20ab92e8255aa0e88c39d61d181f",
+    "/home/flo/programming/unredact/runs/heldout-analysis-001/plan.json": "2e37853ddcd1db5da4491b6baa798b2aa6fb94bf988c97b604c30417af161e4e",
+    "/home/flo/programming/unredact/runs/heldout-native-analysis-001/paired-analysis.json": "f81518f39dc541cfcb83eacabb879e27fd9996f5de0534778522300ad66724f3",
+    "/home/flo/programming/unredact/runs/heldout-native-analysis-001/plan.json": "8d88b28c6aa0b4639d5c489ce73c10856e4ae7b35e998c43682e95c0cec9acf8",
+    "/home/flo/programming/unredact/runs/heldout-native-decisions-001/confidence-controls.json": "5dd84a4637c3b7ccdbe64906ad4a30763ce7cf26940843c9e395d48154def3bd",
+    "/home/flo/programming/unredact/runs/heldout-native-decisions-001/native-decisions.json": "dce40e96ccc6d3156e21eac54d4e21c4cf8dc8886c82091d8d2c1888594ce71e",
+    "/home/flo/programming/unredact/runs/heldout-native-decisions-001/plan.json": "0c5008a3a7d4eed2c2595572a65b5046fd89b3dd1cd80d15355bd90d95a4f117",
+    "/home/flo/programming/unredact/runs/heldout-opaque-001/plan.json": "a7d108a8172a8ffde8db58b0f71534dedca95617446a97a79452f80d89d66932",
+    "/home/flo/programming/unredact/runs/heldout-pixelation-001/completion-audit.json": "15c5ea7ff647b3662e60f323a8fa250984a2550b7b932e81ef1b63a63c517061",
+    "/home/flo/programming/unredact/runs/heldout-pixelation-001/evaluation/summary.json": "9520a40ecdaf13ed0ff8638021ba48d47cbdb9b15a14b40f505e255567e0982d",
+    "/home/flo/programming/unredact/runs/heldout-pixelation-001/plan.json": "e892c2647ba71996f7edd7ed6dd152a321a6a69e3f129c86d2d5b109db5becd1",
+    "/home/flo/programming/unredact/runs/heldout-ranking-audit-001/final-analysis.json": "af3a85b44830b625c3acc79c87f9b4a9c9f8ea4248b96282cfcbca0b3b565597",
+    "/home/flo/programming/unredact/runs/heldout-ranking-audit-001/plan.json": "ab82e41f444924fc73d8c86acb06ec08032c9448a64326acc9949c8d7059d743",
+    "/home/flo/programming/unredact/runs/main-before-joint-pixelation-001/cli-final-replay/summary.json": "e0a2d973397c8d392801a299e64ee9c98cb4679d2cc7d138900ae39d41dd8279",
+    "/home/flo/programming/unredact/runs/morten-confidence-development-001/confidence-controls.json": "830e2fca788e331695311d14e3d3c3619452e10164a508bc4d19674abe9c10c0",
+    "/home/flo/programming/unredact/runs/morten-confidence-development-001/paired-analysis.json": "fb9044584b957847d723a3b41f59780193ce59139b863af8addf2eca878d3a8f",
+    "/home/flo/programming/unredact/runs/mosaic-cells-development-001/forward-model-audit.json": "299859d10faa46a462d274851535ba6cf17e7fb2eebd78d92a3e9eb813c80f3a",
+    "/home/flo/programming/unredact/runs/multidoc-common-language-002/final-analysis.json": "f9f6368a76961e27ee1073a9c18151442fe3dac9fe2700bdbb81ccd261e44c0d",
+    "/home/flo/programming/unredact/runs/renderer-inspection-003.json": "42add0e0b619010ff701aab39e2c2fd76830e582a07a7bc0547168cc3bada9ed",
+    "/home/flo/programming/unredact/runs/vertical-mosaic-development-001/visible-height-summary.json": "9d0e8b03545d2223da54da5b509da08217976106241d1d856fa78599e7453ec7",
+    "/home/flo/programming/unredact/scripts/adapters/alex_browser.py": "49551a7ca7f371335930b81e1e9d2abfceebf92477f45612c834ed186390a8dc",
+    "/home/flo/programming/unredact/scripts/adapters/morten_unredactron.py": "085c571ef45a4a749c6d76a5eaff1274b49ffe6588d05fcf0e71b2b9a9f39e97",
+    "/home/flo/programming/unredact/scripts/inspect_renderers.py": "e8e26c3cb9d704e42e38b40618f6c36b32d4496a21a372a6dbc18a352ce502e7",
+    "/home/flo/programming/unredact/scripts/neural/train.py": "dcfe390edf270599c0380641783af1c4a341b3fc6502d2057183142f2b844a17",
+    "/home/flo/programming/unredact/scripts/neural/typography.py": "5c9b3071a1bdaa4fcc32b21bcafd099392256d5367277dea733471939f7c69a6",
+    "/home/flo/programming/unredact/scripts/ollama_provider.py": "0d9275a1d4de534b864f54e788d0bdf458fe8c446d0587c2df071dd82aa8bc58",
+    "/home/flo/programming/unredact/scripts/span_context_provider.py": "570ac7da2092e316877749e1b31bffbefc4338645972ad5ae0f86086d5bab213",
+    "/home/flo/programming/unredact/scripts/span_proposal_provider.py": "a9a699c687eec33b3f1bd21a20b56ff1206bec8a2081aeb6c7c4ac760e1413f0",
+    "/home/flo/programming/unredact/src/calibration.rs": "536a1df06badbdacf1736b415e5d6cd4d65fe502c1caac6108acbc5db54afdbc",
+    "/home/flo/programming/unredact/src/expansion.rs": "cf563b56a34250c57698c767ad39d505e9c90431eddeb65e4edf433112e20583",
+    "/home/flo/programming/unredact/src/linking.rs": "cd493d16f430fbec3f04da8b8808ed2b44d65d661082b8551f0f1c673344a07d",
+    "/home/flo/programming/unredact/src/mosaic_cells.rs": "e751f30b16404603d9ddb83cd6e78f646f7619c9b09d23d51315ca473273e515",
+    "/home/flo/programming/unredact/src/mosaic_joint.rs": "ffe520d7ee8cec0cdaf917d78697ea6f5d8529b810fb64eb38c227c0a01fc0bc",
+    "/home/flo/programming/unredact/src/mosaic_rank.rs": "0c4d088a89803243e3c348072f3014b46a57bd36989fcc38eb83c7227b413a16",
+    "/home/flo/programming/unredact/src/native.rs": "b8dd59eb4c6f24041c0720c0257f5b47a3a2544efb9fd3dae5f403e2bafd567e",
+    "/home/flo/programming/unredact/src/neural.rs": "ee443fc21f839a56bba37eb68bb940042f4d96fae44581dc70dbed221367d532",
+    "/home/flo/programming/unredact/src/pixelation.rs": "72776c527ec714589f39deb642b0504da0082e6afa5b52f0dfd6639b4b386724",
+    "/home/flo/programming/unredact/src/search.rs": "6c281dd601b4725cb526f3053e218bd56d0f53ba988bc3e10abfab563d34e5cb",
+    "/home/flo/programming/unredact/src/shared_grid.rs": "5c34ba1049e65e05491629f4ae605db1845504328c4bdd48d42d250506ce23c2",
+    "/home/flo/programming/unredact/src/solver.rs": "43c020a3a7ca32e0e38626ff2a1e7732525d3262c1f7ed1e7ab2c78d95cf3562",
+    "/home/flo/programming/unredact/src/typography.rs": "f16e1bebb7f176c88451c22b50b47fbb57073720f05a54c91377c170afb54b08",
+    "/home/flo/programming/unredact/src/vertical.rs": "e4a24b98b8071390bd106c9d9b98fbef658b74d9a24e61f79af1a4466eae1d12",
+    "/home/flo/programming/unredact/tests/core.rs": "9c7b1185bc3ba71fde1ad25ce8fd2c97abb606f6fe5236e777026c0efc8a4ca1",
+    "/home/flo/programming/unredact/tests/mosaic_joint.rs": "eaef8e6d73237692d24d8f3a386c403e809f79daec5941b9155172ec2ba61cf4"
+  },
+  "limits": [
+    "Government English printed-text sample; no measured real Epsteins-file hidden-name recovery rate.",
+    "Supplied-answer candidate vocabularies and manually supplied mask locations; open-vocabulary recall and automated localization are separate problems.",
+    "No calibrated identity or absent-truth posterior.",
+    "Handwriting, arbitrary redactor padding, unknown/mixed fonts and post-pixelation resampling need broader validation."
+  ]
+}
