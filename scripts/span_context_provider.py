@@ -94,45 +94,87 @@ def score_items(items, contexts, tokenizer, model, torch, batch_size=16):
     return dict(unique_contexts=len(by_context), unique_sequences=len(grouped))
 
 
+class Scorer:
+    """Verified immutable model assets shared by requests within one worker."""
+    def __init__(self, args):
+        os.environ['HF_HUB_OFFLINE'] = '1'
+        os.environ['TRANSFORMERS_OFFLINE'] = '1'
+        os.environ['TOKENIZERS_PARALLELISM'] = 'false'
+        import torch
+        import transformers
+        from transformers import T5ForConditionalGeneration, T5TokenizerFast
+        torch.set_num_threads(args.threads)
+        self.args, self.torch = args, torch
+        self.provenance = verify_model(args.model_dir)
+        self.tokenizer = T5TokenizerFast.from_pretrained(args.model_dir, local_files_only=True)
+        self.model = T5ForConditionalGeneration.from_pretrained(args.model_dir, local_files_only=True,
+                                                               use_safetensors=True).eval()
+        if verify_model(args.model_dir) != self.provenance:
+            raise ValueError('Model changed during loading')
+        self.adapter = None
+        if getattr(args, 'adapter', None):
+            from span_adapter import load
+            self.adapter = load(self.model, args.adapter, self.provenance)
+        self.runtime = dict(torch=torch.__version__, transformers=transformers.__version__)
+        files = ['span_context_provider.py', 'span_proposal_provider.py', 'ollama_provider.py',
+                 'fetch_span_model.py', 'fetch_context_model.py']
+        self.source_hashes = {name: digest(Path(__file__).with_name(name)) for name in files}
+
+    def score(self, request):
+        args = self.args
+        items, contexts = prepare(request, self.tokenizer, args.context_tokens)
+        stats = score_items(items, contexts, self.tokenizer, self.model, self.torch, args.batch_size)
+        scores = [{k: item[k] for k in ('id', 'target', 'token_log_score_sum', 'token_count')} for item in items]
+        result = dict(schema_version=1, scores=scores, provenance=self.provenance,
+            method='t5_candidate_and_closing_sentinel_given_opening_sentinel',
+            interpretation='Complete span log score with termination, not a posterior probability of the hidden text. Token counts include the closing sentinel. Use sequence-score to avoid length normalization.',
+            contexts_used=contexts, diagnostics=items, forward_states=stats,
+            options=dict(threads=args.threads, batch_size=args.batch_size, context_tokens=args.context_tokens),
+            runtime=self.runtime,
+            request_sha256=hashlib.sha256(json.dumps(request, sort_keys=True).encode()).hexdigest(),
+            source_hashes=self.source_hashes)
+        if self.adapter is not None:
+            result['domain_adapter'] = self.adapter
+        return result
+
+
 def run(request, args):
-    os.environ['HF_HUB_OFFLINE'] = '1'
-    os.environ['TRANSFORMERS_OFFLINE'] = '1'
-    os.environ['TOKENIZERS_PARALLELISM'] = 'false'
-    import torch
-    import transformers
-    from transformers import T5ForConditionalGeneration, T5TokenizerFast
-    torch.set_num_threads(args.threads)
-    provenance = verify_model(args.model_dir)
-    tokenizer = T5TokenizerFast.from_pretrained(args.model_dir, local_files_only=True)
-    model = T5ForConditionalGeneration.from_pretrained(args.model_dir, local_files_only=True,
-                                                       use_safetensors=True).eval()
-    if verify_model(args.model_dir) != provenance:
-        raise ValueError('Model changed during loading')
-    adapter = None
-    if getattr(args, 'adapter', None):
-        from span_adapter import load
-        adapter = load(model, args.adapter, provenance)
-    items, contexts = prepare(request, tokenizer, args.context_tokens)
-    stats = score_items(items, contexts, tokenizer, model, torch, args.batch_size)
-    scores = [{k: item[k] for k in ('id', 'target', 'token_log_score_sum', 'token_count')} for item in items]
-    files = ['span_context_provider.py', 'span_proposal_provider.py', 'ollama_provider.py',
-             'fetch_span_model.py', 'fetch_context_model.py']
-    result = dict(schema_version=1, scores=scores, provenance=provenance,
-        method='t5_candidate_and_closing_sentinel_given_opening_sentinel',
-        interpretation='Complete span log score with termination, not a posterior probability of the hidden text. Token counts include the closing sentinel. Use sequence-score to avoid length normalization.',
-        contexts_used=contexts, diagnostics=items, forward_states=stats,
-        options=dict(threads=args.threads, batch_size=args.batch_size, context_tokens=args.context_tokens),
-        runtime=dict(torch=torch.__version__, transformers=transformers.__version__),
-        request_sha256=hashlib.sha256(json.dumps(request, sort_keys=True).encode()).hexdigest(),
-        source_hashes={name: digest(Path(__file__).with_name(name)) for name in files})
-    if adapter is not None:
-        result['domain_adapter'] = adapter
-    return result
+    return Scorer(args).score(request)
+
+
+def encode_response(result):
+    raw = json.dumps(result, ensure_ascii=False, allow_nan=False).encode()
+    if len(raw) > LIMIT:
+        raise ValueError('Response exceeds 8 MB')
+    return raw + b'\n'
+
+
+def serve(stream, output, args, scorer_factory=Scorer):
+    """Process bounded request-ID envelopes; load the model once, on first use."""
+    scorer, request_id = None, 0
+    while True:
+        raw = stream.readline(LIMIT + 2)
+        if not raw:
+            return
+        if not raw.endswith(b'\n') or len(raw) - 1 > LIMIT:
+            raise ValueError('Request exceeds 8 MB or lacks newline')
+        frame = json.loads(raw)
+        request_id += 1
+        if (not isinstance(frame, dict) or frame.get('worker_protocol_version') != 1
+                or type(frame.get('request_id')) is not int or frame['request_id'] != request_id
+                or not isinstance(frame.get('request'), dict)):
+            raise ValueError('Invalid persistent worker request envelope')
+        if scorer is None:
+            scorer = scorer_factory(args)
+        result = scorer.score(frame['request'])
+        output.write(encode_response(dict(worker_protocol_version=1, request_id=request_id, response=result)))
+        output.flush()
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--model-dir', type=Path, required=True)
+    parser.add_argument('--persistent', action='store_true', help='Serve bounded request-ID JSON lines until EOF')
     parser.add_argument('--adapter', type=Path, help='Optional verified local domain adapter directory')
     parser.add_argument('--threads', type=int, default=4)
     parser.add_argument('--batch-size', type=int, default=16)
@@ -140,16 +182,17 @@ def main():
     args = parser.parse_args()
     if not 1 <= args.threads <= 32 or not 1 <= args.batch_size <= 64 or not 1 <= args.context_tokens <= 192:
         parser.error('Invalid inference limits')
-    raw = sys.stdin.buffer.read(LIMIT + 1)
-    if len(raw) > LIMIT:
-        parser.error('Request exceeds 8 MB')
     try:
-        result = json.dumps(run(json.loads(raw), args), ensure_ascii=False, allow_nan=False)
-        if len(result.encode()) > LIMIT:
-            raise ValueError('Response exceeds 8 MB')
+        if args.persistent:
+            serve(sys.stdin.buffer, sys.stdout.buffer, args)
+            return
+        raw = sys.stdin.buffer.read(LIMIT + 1)
+        if len(raw) > LIMIT:
+            raise ValueError('Request exceeds 8 MB')
+        result = encode_response(run(json.loads(raw), args))
     except (ValueError, KeyError, TypeError, OSError) as error:
         parser.exit(1, f'Span context provider: {error}\n')
-    print(result)
+    sys.stdout.buffer.write(result)
 
 
 if __name__ == '__main__':

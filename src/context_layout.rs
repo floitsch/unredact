@@ -184,6 +184,7 @@ pub fn paragraph_context(project: &Project, target: &Target) -> Result<Context> 
                     || w.text.chars().any(char::is_control)
                     || gap < 0.0
                     || gap > line.height * 4.0
+                    || masks.iter().any(|m| m.intersects(b))
                     || masked(x0, x1, line.bounds)
                 {
                     notes.push(format!(

@@ -1,0 +1,258 @@
+<!doctype html>
+<!-- Copyright (C) 2026 Toit contributors. -->
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Unredact local review</title>
+<style>
+:root {font-family: system-ui, sans-serif; color: #172236; background: #f3f5f8; font-size: 14px}
+* {box-sizing: border-box} body {margin: 0} header {padding: 16px 22px; background: #172236; color: white}
+h1 {font-size: 20px; margin: 0 0 6px} p {margin: 6px 0 10px; line-height: 1.5}
+main {display: grid; grid-template-columns: minmax(340px, 1fr) 380px; gap: 16px; padding: 16px}
+.panel {background: white; border: 1px solid #d8dee8; border-radius: 7px; padding: 14px}
+.toolbar {display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 12px}
+button, select, input, textarea {font: inherit; border: 1px solid #a9b4c6; border-radius: 4px; padding: 7px; background: white; color: inherit}
+button {cursor: pointer} button.primary {background: #214fc2; color: white; border-color: #214fc2} button:disabled {opacity: .45; cursor: default}
+button[aria-pressed="true"] {background: #214fc2; color: white} select {max-width: 100%}
+label {display: block; font-size: 12px; margin: 9px 0 4px; color: #465269} label input[type="checkbox"] {vertical-align: middle; margin-right: 6px}
+input, textarea {width: 100%} input[type="checkbox"] {width: auto} input[type="range"] {width: 100px}
+.fields {display: grid; grid-template-columns: 1fr 1fr; column-gap: 10px} .coords {grid-template-columns: repeat(4, 1fr)}
+textarea {resize: vertical; min-height: 52px} #evidence {font-family: ui-monospace, monospace; font-size: 12px; min-height: 112px}
+.viewport {overflow: auto; max-height: 76vh; min-height: 300px; border: 1px solid #a9b4c6; background: #dfe4ec; position: relative}
+canvas {display: block; touch-action: none; cursor: move; background: white}
+.legend {display: flex; flex-wrap: wrap; gap: 10px; font-size: 12px; margin-top: 10px}
+.swatch {display: inline-block; width: 10px; height: 10px; margin-right: 4px; background: var(--color)}
+.status {padding: 10px; border-radius: 4px; margin: 12px 0; background: #eef2f8; overflow-wrap: anywhere}
+.valid {background: #e5f4eb; color: #155d36} .invalid {background: #fff0e8; color: #87390c}
+pre {white-space: pre-wrap; overflow-wrap: anywhere; margin: 8px 0; font: inherit; line-height: 1.5}
+.muted {color: #566277; font-size: 12px} #fingerprint {font-family: ui-monospace, monospace; font-size: 11px; overflow-wrap: anywhere}
+details {margin-top: 12px} summary {cursor: pointer} #spec {font-family: ui-monospace, monospace; font-size: 11px}
+@media (max-width: 850px) {main {grid-template-columns: 1fr} .viewport {max-height: 60vh}}
+</style>
+<header><h1>Unredact · local page review</h1><div id="page-title">Loading verified page pixels…</div></header>
+<main>
+<section class="panel">
+  <div class="toolbar">
+    <button id="draw" aria-pressed="false">Draw new rectangle</button>
+    <button id="fit">Fit width</button>
+    <label>Zoom <input id="zoom" type="range" min="10" max="250" value="100"><span id="zoom-label">100%</span></label>
+  </div>
+  <p class="muted">Drag the pink draft to move it; drag its corner handles to resize. Draw mode creates a draft. All coordinates use original page pixels.</p>
+  <div class="toolbar"><label><input id="show-masks" type="checkbox" checked>Masks and registered targets</label><label><input id="show-calibration" type="checkbox" checked>Selected profile exclusions</label><label><input id="show-context" type="checkbox" checked>OCR context words</label></div>
+  <div class="viewport" id="viewport"><canvas id="page" aria-label="Page pixels and target rectangles"></canvas></div>
+  <div class="legend">
+    <span><i class="swatch" style="--color:#e18b00"></i>Proposed mask</span>
+    <span><i class="swatch" style="--color:#cc293d"></i>Registered target</span>
+    <span><i class="swatch" style="--color:#ed00a2"></i>Editable draft</span>
+    <span><i class="swatch" style="--color:#3271b8"></i>Training</span>
+    <span><i class="swatch" style="--color:#8244ba"></i>Validation</span>
+    <span><i class="swatch" style="--color:#298c49"></i>Audit</span>
+    <span><i class="swatch" style="--color:#bf490d"></i>Spacing</span>
+    <span><i class="swatch" style="--color:#66583e"></i>Font selection</span>
+    <span><i class="swatch" style="--color:#009ca8"></i>Context</span>
+  </div>
+  <p id="fingerprint" class="muted"></p>
+</section>
+<aside class="panel">
+  <label for="existing">Start from a rectangle</label><select id="existing"><option value="">New draft</option></select>
+  <div class="fields"><div><label for="id">Target ID</label><input id="id" value="target-1" required></div><div><label for="group">Group hypothesis</label><input id="group" value="group-1" required></div></div>
+  <label for="profile">Calibrated profile</label><select id="profile"></select>
+  <div class="fields coords">
+    <div><label for="x">x</label><input id="x" type="number" step="0.1" min="0"></div>
+    <div><label for="y">y</label><input id="y" type="number" step="0.1" min="0"></div>
+    <div><label for="w">Width</label><input id="w" type="number" step="0.1" min="0.1"></div>
+    <div><label for="h">Height</label><input id="h" type="number" step="0.1" min="0.1"></div>
+  </div>
+  <div class="fields"><div><label for="surface">Surface kind</label><input id="surface" value="canonical"></div><div><label for="dependence">Dependence key (optional)</label><input id="dependence"></div></div>
+  <label for="evidence">Evidence JSON</label><textarea id="evidence" spellcheck="false"></textarea>
+  <p class="muted">The initial draft uses an opaque mask with explicit padding and measurement sigma. Review these assumptions or retain an existing target’s evidence.</p>
+  <details><summary>Supplied context overrides</summary><label for="left">Left context</label><textarea id="left"></textarea><label for="right">Right context</label><textarea id="right"></textarea></details>
+  <label><input id="paragraph" type="checkbox">Preview paragraph context</label>
+  <div id="validation" class="status" role="status">Choose a profile and review the draft.</div>
+  <strong>Rust context preview</strong><pre id="context"></pre><p class="muted" id="sources"></p>
+  <button id="download" class="primary" disabled>Download validated target JSON</button>
+  <p class="muted">Downloading does not save the project. Register the downloaded file with <code>unredact target --project PROJECT --spec FILE.json</code>. Registering an existing target ID replaces that target.</p>
+  <details><summary>Draft target specification</summary><pre id="spec"></pre></details>
+</aside>
+</main>
+<script>
+'use strict';
+const $ = id => document.getElementById(id);
+const canvas = $('page'), ctx = canvas.getContext('2d');
+let data, image, draft, scale = 1, drawing = false, drag = null, context = null;
+let timer, requestVersion = 0;
+const colors = {training:'#3271b8', validation:'#8244ba', audit:'#298c49', spacing:'#bf490d', neural:'#66583e'};
+const endpoint = name => new URL(name, window.location.href).href;
+function status(message, valid = false) {
+  $('validation').textContent = message;
+  $('validation').className = 'status ' + (valid ? 'valid' : 'invalid');
+}
+function rectFromFields() {return Object.fromEntries(['x','y','w','h'].map(k => [k, Number($(k).value)]));}
+function readDraft() {
+  return {id:$('id').value, page:data.page.id, bounds:rectFromFields(), profile:$('profile').value,
+    group:$('group').value, surface_kind:$('surface').value, evidence:JSON.parse($('evidence').value),
+    left_context:$('left').value, right_context:$('right').value, dependence_key:$('dependence').value || null};
+}
+function fill(target, reveal = true) {
+  draft = structuredClone(target);
+  for (const k of ['x','y','w','h']) $(k).value = draft.bounds[k];
+  $('id').value = draft.id; $('group').value = draft.group; $('profile').value = draft.profile;
+  $('surface').value = draft.surface_kind; $('dependence').value = draft.dependence_key || '';
+  $('left').value = draft.left_context; $('right').value = draft.right_context;
+  $('evidence').value = JSON.stringify(draft.evidence, null, 2);
+  changed(); if (reveal) revealDraft();
+}
+function newTarget(bounds) {
+  let n = 1;
+  while (data.targets.some(t => t.id === 'target-' + n)) n++;
+  return {id:'target-' + n, page:data.page.id, bounds, profile:$('profile').value,
+    group:'group-' + n, surface_kind:'canonical', evidence:{kind:'opaque', padding_min:0, padding_max:0, measurement_sigma:1},
+    left_context:'', right_context:'', dependence_key:null};
+}
+function changed() {
+  clearTimeout(timer); requestVersion++;
+  $('download').disabled = true;
+  context = null; $('context').textContent = ''; $('sources').textContent = '';
+  try {
+    draft = readDraft(); $('spec').textContent = JSON.stringify(draft, null, 2);
+    status('Checking draft…'); render();
+    const version = requestVersion;
+    timer = setTimeout(() => preview(version), 160);
+  } catch (error) {status('Invalid evidence JSON: ' + error.message); render();}
+}
+async function api(name, body) {
+  const response = await fetch(endpoint(name), {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)});
+  const value = await response.json();
+  if (!response.ok) throw new Error(value.error || response.statusText);
+  return value;
+}
+function payload() {return {target:readDraft(), image_sha256:data.page.image_sha256, paragraph_context:$('paragraph').checked};}
+async function preview(version) {
+  try {
+    const value = await api('preview', payload());
+    if (version !== requestVersion) return;
+    status(value.valid ? 'Valid target. Ready to download.' : value.validation_error, value.valid);
+    $('download').disabled = !value.valid;
+    context = value.context;
+    $('context').textContent = context ? context.left + ' [REDACTED] ' + context.right : (value.context_error || 'No context');
+    $('sources').textContent = context ? 'Left: ' + context.left_source + ' · Right: ' + context.right_source +
+      (context.layout_notes?.length ? '\n' + context.layout_notes.join('\n') : '') : '';
+    render();
+  } catch (error) {if (version === requestVersion) status(error.message);}
+}
+function stroke(rect, color, dash = [], fill = false) {
+  ctx.strokeStyle = color; ctx.lineWidth = 1.7 / scale; ctx.setLineDash(dash.map(n => n / scale));
+  if (fill) {ctx.fillStyle = color + '20'; ctx.fillRect(rect.x, rect.y, rect.w, rect.h);}
+  ctx.strokeRect(rect.x, rect.y, rect.w, rect.h); ctx.setLineDash([]);
+}
+function corners(r) {return [[r.x,r.y], [r.x+r.w,r.y], [r.x,r.y+r.h], [r.x+r.w,r.y+r.h]];}
+function render() {
+  if (!data || !image) return;
+  canvas.width = Math.round(data.page.width * scale); canvas.height = Math.round(data.page.height * scale);
+  ctx.setTransform(scale, 0, 0, scale, 0, 0); ctx.imageSmoothingEnabled = false; ctx.drawImage(image,0,0);
+  if ($('show-calibration').checked) {
+    const profile = data.profiles.find(p => p.id === $('profile').value);
+    for (const exclusion of profile?.exclusions || []) stroke(exclusion.bounds, colors[exclusion.kind], [], true);
+  }
+  if ($('show-masks').checked) {
+    for (const r of data.page.proposed_redactions) stroke(r, '#e18b00', [5,4]);
+    for (const t of data.targets) stroke(t.bounds, '#cc293d', [2,2]);
+  }
+  if (context && $('show-context').checked) {
+    for (const i of [...context.left_word_indices,...context.right_word_indices]) {
+      if (data.page.words[i]) stroke(data.page.words[i].bounds, '#009ca8', [], true);
+    }
+  }
+  if (draft) {
+    const r = draft.bounds; stroke(r, '#ed00a2'); ctx.fillStyle = '#ed00a2';
+    for (const [x,y] of corners(r)) ctx.fillRect(x-4/scale,y-4/scale,8/scale,8/scale);
+  }
+}
+function point(event) {
+  const r = canvas.getBoundingClientRect();
+  return {x:Math.max(0,Math.min(data.page.width,(event.clientX-r.left)/scale)), y:Math.max(0,Math.min(data.page.height,(event.clientY-r.top)/scale))};
+}
+function updateBounds(bounds) {
+  draft.bounds = bounds;
+  for (const k of ['x','y','w','h']) $(k).value = Math.round(bounds[k]*10)/10;
+  changed();
+}
+canvas.addEventListener('pointerdown', event => {
+  if (!draft || event.button !== 0) return;
+  const p = point(event), r = draft.bounds;
+  if (drawing) {
+    $('existing').value = '';
+    fill(newTarget({x:p.x,y:p.y,w:1,h:1}),false); drag = {kind:'draw', start:p};
+  } else {
+    const handle = corners(r).findIndex(([x,y]) => Math.hypot(p.x-x,p.y-y) <= 10/scale);
+    if (handle >= 0) drag = {kind:'resize', fixed:corners(r)[3-handle]};
+    else if (p.x >= r.x && p.x <= r.x+r.w && p.y >= r.y && p.y <= r.y+r.h) drag = {kind:'move', start:p, bounds:{...r}};
+    else return;
+  }
+  canvas.setPointerCapture(event.pointerId); event.preventDefault();
+});
+canvas.addEventListener('pointermove', event => {
+  if (!drag) return;
+  const p = point(event);
+  if (drag.kind === 'move') {
+    const r = drag.bounds;
+    updateBounds({...r,x:Math.max(0,Math.min(data.page.width-r.w,r.x+p.x-drag.start.x)), y:Math.max(0,Math.min(data.page.height-r.h,r.y+p.y-drag.start.y))});
+  } else {
+    const a = drag.kind === 'draw' ? drag.start : {x:drag.fixed[0],y:drag.fixed[1]};
+    updateBounds({x:Math.min(a.x,p.x),y:Math.min(a.y,p.y),w:Math.max(.1,Math.abs(a.x-p.x)),h:Math.max(.1,Math.abs(a.y-p.y))});
+  }
+});
+function endDrag() {
+  drag = null; drawing = false; $('draw').setAttribute('aria-pressed','false'); canvas.style.cursor = 'move';
+}
+canvas.addEventListener('pointerup', endDrag); canvas.addEventListener('pointercancel',endDrag);
+$('draw').onclick = () => {drawing = !drawing; $('draw').setAttribute('aria-pressed',String(drawing)); canvas.style.cursor = drawing ? 'crosshair' : 'move';};
+$('existing').onchange = () => {
+  const selected = $('existing').value;
+  if (selected.startsWith('target:')) fill(data.targets[Number(selected.slice(7))]);
+  else if (selected.startsWith('proposal:')) fill(newTarget(data.page.proposed_redactions[Number(selected.slice(9))]));
+  else fill(newTarget({x:10,y:10,w:Math.min(100,data.page.width-10),h:Math.min(25,data.page.height-10)}));
+};
+for (const id of ['x','y','w','h','id','group','profile','surface','dependence','evidence','left','right','paragraph']) $(id).addEventListener('input', changed);
+for (const id of ['show-masks','show-calibration','show-context']) $(id).onchange = render;
+function revealDraft() {
+  if (!draft) return;
+  const r = draft.bounds, viewport = $('viewport');
+  viewport.scrollLeft = Math.max(0,(r.x+r.w/2)*scale-viewport.clientWidth/2);
+  viewport.scrollTop = Math.max(0,(r.y+r.h/2)*scale-viewport.clientHeight/2);
+}
+function setScale(value) {scale = value; $('zoom').value = Math.round(value*100); $('zoom-label').textContent = Math.round(value*100)+'%'; render(); revealDraft();}
+$('zoom').oninput = () => setScale(Number($('zoom').value)/100);
+$('fit').onclick = () => setScale(Math.max(.1,Math.min(2.5,($('viewport').clientWidth-2)/data.page.width)));
+$('download').onclick = async () => {
+  const version = requestVersion;
+  $('download').disabled = true;
+  try {
+    const target = await api('export',payload());
+    if (version !== requestVersion) return;
+    const url = URL.createObjectURL(new Blob([JSON.stringify(target,null,2)+'\n'], {type:'application/json'}));
+    const link = document.createElement('a'); link.href = url; link.download = target.id.replace(/[^a-zA-Z0-9_-]/g,'_')+'.json'; link.click();
+    setTimeout(() => URL.revokeObjectURL(url),1000);
+    status('Validated JSON downloaded. Register it with the target command to save the project.',true);
+    $('download').disabled = false;
+  } catch (error) {status(error.message);}
+};
+async function start() {
+  const response = await fetch(endpoint('data')); if (!response.ok) throw new Error('Unable to load page');
+  data = await response.json();
+  $('page-title').textContent = data.page.id+' · '+data.page.width+' × '+data.page.height+' pixels';
+  $('fingerprint').textContent = 'Verified original gray pixels · SHA-256 '+data.page.image_sha256;
+  for (const profile of data.profiles) $('profile').add(new Option(profile.id,profile.id));
+  data.targets.forEach((target,i) => $('existing').add(new Option('Registered: '+target.id,'target:'+i)));
+  data.page.proposed_redactions.forEach((_,i) => $('existing').add(new Option('Proposed mask '+(i+1),'proposal:'+i)));
+  image = new Image(); image.src = endpoint('page.bmp'); await image.decode();
+  if (image.naturalWidth !== data.page.width || image.naturalHeight !== data.page.height) throw new Error('Displayed image dimensions differ from page');
+  const target = data.targets[0] || newTarget(data.page.proposed_redactions[0] || {x:10,y:10,w:100,h:25});
+  if (data.targets.length) $('existing').value = 'target:0';
+  else if (data.page.proposed_redactions.length) $('existing').value = 'proposal:0';
+  fill(target); $('fit').click();
+  if (!data.profiles.length) status('No calibrated profiles on this page. Draw and inspect context; calibrate a profile before exporting.');
+}
+start().catch(error => status(error.message));
+</script>
+</html>

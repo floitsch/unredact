@@ -36,7 +36,7 @@ python3 scripts/fetch_span_model.py --output runs/span-model-001/t5-base
 
 This public model requires no API token. Its approximately 892 MB weights are not
 stored in Git. Then follow the [analysis quickstart](QUICKSTART.md). Local Ollama
-providers for Llama/Gemma are described in the main README.
+providers for Llama/Gemma are described in the [usage guide](USAGE.md#local-llama-or-gemma-without-an-api-token).
 
 ## Optional trained font network
 

@@ -38,6 +38,10 @@ pub(crate) fn score(
     );
     let timeout = Duration::from_secs(config.timeout_seconds);
     let started = Instant::now();
+    let mut worker = config
+        .persistent_provider
+        .then(|| crate::provider::Worker::start(&config.executable, &config.args))
+        .transpose()?;
     let mut all_scores = vec![];
     let mut traces = vec![];
     for batch in items.chunks(config.batch_items) {
@@ -47,8 +51,11 @@ pub(crate) fn score(
             "Context provider total timeout exceeded"
         );
         let request = json!({"schema_version":1,"task":"score_context_candidates","contexts":contexts,"items":batch});
-        let response =
-            crate::provider::call(&config.executable, &config.args, &request, remaining)?;
+        let response = if let Some(worker) = &mut worker {
+            worker.call(&request, remaining)?
+        } else {
+            crate::provider::call(&config.executable, &config.args, &request, remaining)?
+        };
         ensure!(
             response["schema_version"] == 1,
             "Invalid context-score response version"
@@ -82,13 +89,17 @@ pub(crate) fn score(
             "request_sha256":hash(&serde_json::to_vec(&request)?),"response_sha256":hash(&serde_json::to_vec(&response)?),
             "request":request,"response":response}));
     }
-    let trace = if traces.len() == 1 {
+    let mut trace = if traces.len() == 1 {
         traces.pop().unwrap()
     } else {
         json!({"executable":config.executable,"args":config.args,"project_sha256":project_sha256,
                "batch_item_limit":config.batch_items,"total_items":items.len(),"total_timeout_seconds":config.timeout_seconds,
                "batches":traces})
     };
+    if config.persistent_provider {
+        trace["transport"] = json!({"mode":"persistent_json_lines", "worker_protocol_version":1,
+            "appended_args":["--persistent"], "requests":items.len().div_ceil(config.batch_items)});
+    }
     Ok((all_scores, trace))
 }
 
@@ -98,15 +109,21 @@ mod tests {
     fn fixture() -> (tempfile::TempDir, Config, BTreeMap<String, Context>) {
         let directory = tempfile::tempdir().unwrap();
         let script = directory.path().join("scores.py");
-        std::fs::write(&script,r#"import json,sys,time
-r=json.load(sys.stdin)
+        std::fs::write(&script,r#"import json,sys,time,os
 mode=sys.argv[1] if len(sys.argv)>1 else ''
-if mode=='slow': time.sleep(.4)
-scores=[dict(id=i['id'],target=i['target'],token_count=2,token_log_score_sum=-float(len(i['text']))) for i in r['items']]
-if mode=='future': scores[0]['id']='late'
-if mode=='missing': scores.pop()
-if mode=='duplicate': scores.append(scores[0])
-json.dump(dict(schema_version=1,scores=scores),sys.stdout)
+def score(r):
+ if mode=='slow': time.sleep(.4)
+ scores=[dict(id=i['id'],target=i['target'],token_count=2,token_log_score_sum=-float(len(i['text']))) for i in r['items']]
+ if mode=='future': scores[0]['id']='late'
+ if mode=='missing': scores.pop()
+ if mode=='duplicate': scores.append(scores[0])
+ return dict(schema_version=1,scores=scores,provider_pid=os.getpid())
+if '--persistent' in sys.argv:
+ for raw in sys.stdin:
+  frame=json.loads(raw)
+  print(json.dumps(dict(worker_protocol_version=1,request_id=frame['request_id'],response=score(frame['request']))),flush=True)
+else:
+ json.dump(score(json.load(sys.stdin)),sys.stdout)
 "#).unwrap();
         let config = Config {
             executable: "python3".into(),
@@ -117,6 +134,7 @@ json.dump(dict(schema_version=1,scores=scores),sys.stdout)
             sequence_score: true,
             max_compatible: 10_000,
             batch_items: 2048,
+            persistent_provider: false,
             physical_weight: 0.0,
         };
         let context = Context {
@@ -197,6 +215,39 @@ json.dump(dict(schema_version=1,scores=scores),sys.stdout)
             error.to_string().contains("timeout") || error.to_string().contains("timed out"),
             "{error}"
         );
+        assert!(start.elapsed() < Duration::from_millis(2500));
+    }
+
+    #[test]
+    fn persistent_batches_reuse_one_process_without_changing_scores() {
+        let (_dir, mut config, contexts) = fixture();
+        let items: Vec<_> = (0..5)
+            .map(|i| json!({"id":format!("c{i}"),"target":"a","text":"word"}))
+            .collect();
+        config.batch_items = 2;
+        let (one_shot, _) = score(&contexts, &items, "project", &config).unwrap();
+        config.persistent_provider = true;
+        let (persistent, trace) = score(&contexts, &items, "project", &config).unwrap();
+        assert_eq!(
+            serde_json::to_value(one_shot).unwrap(),
+            serde_json::to_value(persistent).unwrap()
+        );
+        let batches = trace["batches"].as_array().unwrap();
+        assert_eq!(batches.len(), 3);
+        let pid = &batches[0]["response"]["provider_pid"];
+        assert!(
+            batches
+                .iter()
+                .all(|batch| &batch["response"]["provider_pid"] == pid)
+        );
+        assert_eq!(trace["transport"]["mode"], "persistent_json_lines");
+        assert_eq!(trace["transport"]["requests"], 3);
+        config.batch_items = 1;
+        config.timeout_seconds = 1;
+        config.args.push("slow".into());
+        let start = Instant::now();
+        let error = score(&contexts, &items, "project", &config).unwrap_err();
+        assert!(error.to_string().contains("timed out"), "{error}");
         assert!(start.elapsed() < Duration::from_millis(2500));
     }
 }

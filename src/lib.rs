@@ -1,4 +1,5 @@
 // Copyright (C) 2026 Toit contributors.
+pub mod abstention;
 pub mod benchmark;
 pub mod calibration;
 pub mod comparison;
@@ -11,11 +12,13 @@ pub mod line_spacing;
 pub mod linking;
 pub mod native;
 pub mod neural;
+pub mod ocr_recovery;
 pub mod padding;
 pub mod pixelation;
 pub mod project;
 pub mod provider;
 pub mod raster;
+pub mod review;
 pub mod scan_span;
 pub mod search;
 pub mod solver;

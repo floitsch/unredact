@@ -141,6 +141,7 @@ json.dump(dict(schema_version=1,scores=scores),sys.stdout)
     let mut config = unredact::contextual::Config {
         max_compatible: 10_000,
         batch_items: 2048,
+        persistent_provider: false,
         physical_weight: 0.0,
         sequence_score: false,
         word_normalization: false,
@@ -257,6 +258,7 @@ json.dump(dict(schema_version=1,scores=[dict(id=i['id'],target=i['target'],token
         sequence_score: true,
         max_compatible: 10_000,
         batch_items: 1,
+        persistent_provider: false,
         physical_weight: 0.,
     };
     let language =
@@ -281,11 +283,11 @@ json.dump(dict(schema_version=1,scores=[dict(id=i['id'],target=i['target'],token
         );
     }
     let mut duplicate = project.targets[0].clone();
-    duplicate.id = "copy".into();
+    duplicate.id = "z-copy".into();
     project.targets.push(duplicate);
     let deduped =
         unredact::contextual::run(&project, dir.path(), "g", &candidates, &config).unwrap();
-    assert_eq!(deduped.physical.ignored_dependent_targets, vec!["copy"]);
+    assert_eq!(deduped.physical.ignored_dependent_targets, vec!["z-copy"]);
     assert_eq!(
         serde_json::to_value(&deduped.ranked).unwrap(),
         serde_json::to_value(&combined.ranked).unwrap()
@@ -357,6 +359,7 @@ json.dump(dict(schema_version=1,scores=[dict(id=i['id'],target=i['target'],
     let mut config = unredact::contextual::Config {
         max_compatible: 10_000,
         batch_items: 2048,
+        persistent_provider: false,
         physical_weight: 0.0,
         sequence_score: false,
         executable: "python3".into(),
@@ -423,7 +426,7 @@ json.dump(dict(schema_version=1,scores=[dict(id=i['id'],target=i['target'],
 fn expansion_restores_omitted_text_without_rewriting_existing_candidates() {
     let (dir, mut p, candidates) = fixture();
     let mut duplicate = p.targets[0].clone();
-    duplicate.id = "duplicate".into();
+    duplicate.id = "z-duplicate".into();
     p.targets.push(duplicate);
     let provider = dir.path().join("propose.py");
     std::fs::write(&provider, r#"import json,sys
@@ -1766,11 +1769,11 @@ fn duplicate_observation_does_not_boost_evidence() {
     let (dir, mut p, c) = fixture();
     let first = solver::solve(&p, dir.path(), "g", &c, 10).unwrap();
     let mut duplicate = p.targets[0].clone();
-    duplicate.id = "copy".into();
+    duplicate.id = "z-copy".into();
     p.targets.push(duplicate);
     let second = solver::solve(&p, dir.path(), "g", &c, 10).unwrap();
     assert_eq!(second.independent_observations, 1);
-    assert_eq!(second.ignored_dependent_targets, ["copy"]);
+    assert_eq!(second.ignored_dependent_targets, ["z-copy"]);
     assert_eq!(
         first.candidates[1].evidence_score,
         second.candidates[1].evidence_score
@@ -1787,6 +1790,219 @@ fn explicit_dependence_deduplicates_different_locations() {
     p.targets.push(duplicate);
     let result = solver::solve(&p, dir.path(), "g", &c, 10).unwrap();
     assert_eq!(result.independent_observations, 1);
+}
+
+#[test]
+fn retained_shared_fit_can_establish_compatibility_without_winning_cost() {
+    let (dir, mut project, candidates) = fixture();
+    let mut alternative = project.profiles[0].fits[0].clone();
+    alternative.validation_rmse = 0.8;
+    alternative.validation_max_error = 0.8;
+    alternative.ink_bias = 2.9 * 0.8_f64.hypot(0.1);
+    project.profiles[0].fits[0].ink_bias = 1.6;
+    let original = solver::solve(&project, dir.path(), "g", &candidates[..1], 10).unwrap();
+    assert!(!original.candidates[0].compatible);
+    project.profiles[0].fits.push(alternative);
+    // Check both a single observation and two linked occurrences. A witness
+    // must retain the same model across all occurrences sharing the profile.
+    for count in 1..=2 {
+        if count == 2 {
+            let mut linked = project.targets[0].clone();
+            linked.id = "linked".into();
+            linked.bounds.y += 100.;
+            project.targets.push(linked);
+        }
+        let report = solver::solve(&project, dir.path(), "g", &candidates[..1], 10).unwrap();
+        let ranked = &report.candidates[0];
+        assert!(ranked.compatible);
+        assert!(ranked.observations.iter().all(|o| o.fit_index == 0));
+        assert!(
+            ranked
+                .observations
+                .iter()
+                .all(|o| o.standardized_error > 3.)
+        );
+        assert!(
+            (ranked.evidence_score - original.candidates[0].evidence_score * count as f64).abs()
+                < 1e-10
+        );
+        let witness = ranked.compatibility_witness.as_ref().unwrap();
+        assert_eq!(witness.len(), count);
+        assert!(witness.iter().all(|o| o.fit_index == 1));
+        assert!(
+            witness
+                .iter()
+                .all(|o| (o.standardized_error - 2.9).abs() < 1e-10)
+        );
+        assert_eq!(ranked.compatible_observations()[0].fit_index, 1);
+    }
+    project.profiles[0].fits[1].ink_bias = 3.1 * 0.8_f64.hypot(0.1);
+    let no_witness = solver::solve(&project, dir.path(), "g", &candidates[..1], 10).unwrap();
+    assert!(!no_witness.candidates[0].compatible);
+    assert!(no_witness.candidates[0].compatibility_witness.is_none());
+}
+
+#[test]
+fn compatibility_cannot_mix_typography_hypotheses_between_linked_occurrences() {
+    let (dir, mut project, candidates) = fixture();
+    let mut other = project.targets[0].clone();
+    other.id = "other".into();
+    other.bounds.y += 100.;
+    other.bounds.w += 4.;
+    project.targets.push(other);
+    let mut alternate = project.profiles[0].fits[0].clone();
+    alternate.ink_bias = 4.;
+    project.profiles[0].fits.push(alternate);
+    let both = solver::solve(&project, dir.path(), "g", &candidates[..1], 10).unwrap();
+    assert!(!both.candidates[0].compatible);
+    assert!(both.candidates[0].compatibility_witness.is_none());
+    let targets = project.targets.clone();
+    for target in targets {
+        project.targets = vec![target];
+        let alone = solver::solve(&project, dir.path(), "g", &candidates[..1], 10).unwrap();
+        assert!(alone.candidates[0].compatible);
+        assert!(alone.candidates[0].compatibility_witness.is_none());
+    }
+}
+
+#[test]
+fn compatible_surface_witness_supplies_context_text_and_word_normalization() {
+    let (dir, mut project, mut candidates) = fixture();
+    candidates.truncate(1);
+    candidates[0].surfaces[0].text = "AmberVale".into();
+    candidates[0].surfaces.push(Surface {
+        text: "Amber Vale".into(),
+        kind: "canonical".into(),
+    });
+    let fit = &mut project.profiles[0].fits[0];
+    let font = Font::open(&fit.font).unwrap();
+    let observed = fit.predict(&font, "AmberVale").unwrap();
+    fit.ink_bias = 1.6;
+    let adjustment = observed + 2.9 * 2_f64.hypot(0.1) - fit.predict(&font, "Amber Vale").unwrap();
+    fit.spacing = Some(unredact::spacing::SpacingFit {
+        adjustment,
+        proposed_adjustment: adjustment,
+        training_pairs: 12,
+        validation_pairs: 4,
+        validation_before: 2.,
+        validation_after: 2.,
+        audit_pairs: 0,
+        audit_before: None,
+        audit_after: None,
+    });
+    project.targets[0].evidence = Evidence::Width {
+        width: observed,
+        measurement_sigma: 0.1,
+    };
+    let physical = solver::solve(&project, dir.path(), "g", &candidates, 10).unwrap();
+    let ranked = &physical.candidates[0];
+    assert!(ranked.compatible);
+    assert_eq!(ranked.observations[0].surface, "AmberVale");
+    assert!(ranked.observations[0].standardized_error > 3.);
+    let witness = ranked.compatibility_witness.as_ref().unwrap();
+    assert_eq!(witness[0].surface, "Amber Vale");
+    assert!((witness[0].standardized_error - 2.9).abs() < 1e-10);
+    assert_eq!(witness[0].fit_index, ranked.observations[0].fit_index);
+    let script = dir.path().join("witness-context.py");
+    std::fs::write(&script, r#"import json,sys
+r=json.load(sys.stdin)
+assert len(r['items']) == 1
+i=r['items'][0]
+assert i['text'] == 'Amber Vale'
+json.dump({'schema_version':1,'scores':[dict(id=i['id'],target=i['target'],token_count=3,token_log_score_sum=-4)]},sys.stdout)
+"#).unwrap();
+    let config = unredact::contextual::Config {
+        executable: "python3".into(),
+        args: vec![script.display().to_string()],
+        timeout_seconds: 5,
+        paragraph_context: false,
+        word_normalization: true,
+        sequence_score: false,
+        max_compatible: 10,
+        batch_items: 10,
+        persistent_provider: false,
+        physical_weight: 0.,
+    };
+    let context =
+        unredact::contextual::run(&project, dir.path(), "g", &candidates, &config).unwrap();
+    assert_eq!(context.ranked[0].mean_word_log_score, Some(-2.));
+    assert_eq!(
+        serde_json::to_value(context.physical).unwrap(),
+        serde_json::to_value(physical).unwrap()
+    );
+}
+
+#[test]
+fn dependency_bridges_merge_components_for_every_target_order() {
+    let (dir, mut project, candidates) = fixture();
+    let mut original = project.targets[0].clone();
+    original.id = "a-original".into();
+    let mut other = original.clone();
+    other.id = "b-rescaled".into();
+    other.bounds.x += 20.;
+    other.dependence_key = Some("shared-scan".into());
+    // The bridge duplicates a-original's pixels and shares b-rescaled's key.
+    // It must merge both components even if encountered after both of them.
+    let mut bridge = original.clone();
+    bridge.id = "c-bridge".into();
+    bridge.dependence_key = other.dependence_key.clone();
+    // An identical crop on a separately registered page is still a copy.
+    let mut copied_page = project.pages[0].clone();
+    copied_page.id = "copied-page".into();
+    let mut copied_profile = project.profiles[0].clone();
+    copied_profile.id = "copied-profile".into();
+    copied_profile.page = copied_page.id.clone();
+    bridge.page = copied_page.id.clone();
+    bridge.profile = copied_profile.id.clone();
+    project.pages.push(copied_page);
+    project.profiles.push(copied_profile);
+    let targets = [original.clone(), other, bridge];
+    project.targets = vec![original];
+    let expected = solver::solve(&project, dir.path(), "g", &candidates, 10).unwrap();
+    for order in [
+        [0, 1, 2],
+        [0, 2, 1],
+        [1, 0, 2],
+        [1, 2, 0],
+        [2, 0, 1],
+        [2, 1, 0],
+    ] {
+        project.targets = order.iter().map(|&i| targets[i].clone()).collect();
+        let report = solver::solve(&project, dir.path(), "g", &candidates, 10).unwrap();
+        assert_eq!(report.independent_observations, 1, "order {order:?}");
+        assert_eq!(
+            report.ignored_dependent_targets,
+            ["b-rescaled", "c-bridge"],
+            "order {order:?}"
+        );
+        assert_eq!(
+            serde_json::to_value(&report.candidates).unwrap(),
+            serde_json::to_value(&expected.candidates).unwrap(),
+            "order {order:?}"
+        );
+    }
+    // Ignored targets must still pass validation.
+    project.targets[1].bounds.x = -1.;
+    assert!(solver::solve(&project, dir.path(), "g", &candidates, 10).is_err());
+}
+
+#[test]
+fn nearby_crops_are_independent_and_output_order_is_stable() {
+    let (dir, mut project, candidates) = fixture();
+    let mut nearby = project.targets[0].clone();
+    nearby.id = "a-nearby".into();
+    // These coordinates previously collided after rounding to three decimals.
+    nearby.bounds.x += 0.0001;
+    project.targets.push(nearby);
+    let first = solver::solve(&project, dir.path(), "g", &candidates, 10).unwrap();
+    assert_eq!(first.independent_observations, 2);
+    assert!(first.ignored_dependent_targets.is_empty());
+    project.targets.reverse();
+    let reordered = solver::solve(&project, dir.path(), "g", &candidates, 10).unwrap();
+    assert_eq!(
+        serde_json::to_value(first).unwrap(),
+        serde_json::to_value(reordered).unwrap()
+    );
 }
 #[test]
 fn huge_ai_score_cannot_override_geometry() {

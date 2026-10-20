@@ -444,8 +444,19 @@ pub fn plausible_redactions(proposals: &[Rect], words: &[Word]) -> Vec<Rect> {
 }
 
 fn ocr_with_tessdata(path: &Path, tessdata: Option<&Path>) -> Result<Vec<Word>> {
+    ocr_with_settings(path, tessdata, 3)
+}
+
+pub(crate) fn ocr_with_settings(
+    path: &Path,
+    tessdata: Option<&Path>,
+    psm: usize,
+) -> Result<Vec<Word>> {
     let mut command = Command::new("tesseract");
-    command.arg(path).args(["stdout", "--psm", "3"]);
+    command
+        .arg(path)
+        .args(["stdout", "--psm"])
+        .arg(psm.to_string());
     if let Some(directory) = tessdata {
         command
             .args(["--oem", "1", "--tessdata-dir"])
@@ -483,6 +494,28 @@ pub fn refresh_visible_ocr_with_tessdata(
     masks: &[Rect],
     tessdata: Option<&Path>,
 ) -> Result<()> {
+    refresh_visible_ocr_with_options(
+        dir,
+        page_id,
+        masks,
+        tessdata,
+        &crate::ocr_recovery::OcrRecoveryOptions::default(),
+    )
+}
+
+/// Refresh before calibration, optionally retrying missing visible context.
+/// Retrying never resamples the original evidence or changes measurement pixels.
+pub fn refresh_visible_ocr_with_options(
+    dir: &Path,
+    page_id: &str,
+    masks: &[Rect],
+    tessdata: Option<&Path>,
+    options: &crate::ocr_recovery::OcrRecoveryOptions,
+) -> Result<()> {
+    ensure!(
+        (1..=64).contains(&options.max_regions),
+        "OCR retry region limit must be 1–64"
+    );
     let model = tessdata
         .map(|directory| -> Result<_> {
             let directory = directory.canonicalize()?;
@@ -505,6 +538,10 @@ pub fn refresh_visible_ocr_with_tessdata(
     ensure!(
         hash(&original.pixels) == page.image_sha256,
         "Page image hash mismatch"
+    );
+    ensure!(
+        original.width == page.width && original.height == page.height,
+        "Page image dimensions do not match project metadata"
     );
     let mut regions = plausible_redactions(&page.proposed_redactions, &page.words);
     regions.extend_from_slice(masks);
@@ -531,11 +568,38 @@ pub fn refresh_visible_ocr_with_tessdata(
     let model_suffix = model
         .as_ref()
         .map_or(String::new(), |(_, sha)| format!("-{sha}"));
-    let output = output_dir.join(format!("{input_id}{model_suffix}.pgm"));
+    let retry_suffix = if options.retry_missing_context {
+        format!("-context-retry-r{}-v1", options.max_regions)
+    } else {
+        String::new()
+    };
+    let output = output_dir.join(format!("{input_id}{model_suffix}{retry_suffix}.pgm"));
     masked.save(&output)?;
     let mut words = ocr_with_tessdata(
         &output,
         model.as_ref().map(|(directory, _)| directory.as_path()),
+    )?;
+    crate::ocr_recovery::refine_words(&mut words, &original, &regions);
+    let mut focus = input_regions.clone();
+    focus.sort_by(|a, b| {
+        a.y.total_cmp(&b.y)
+            .then(a.x.total_cmp(&b.x))
+            .then(a.h.total_cmp(&b.h))
+            .then(a.w.total_cmp(&b.w))
+    });
+    focus.dedup_by(|a, b| a.x == b.x && a.y == b.y && a.w == b.w && a.h == b.h);
+    let recovery = crate::ocr_recovery::recover(
+        crate::ocr_recovery::RecoveryInput {
+            original: &original,
+            masked: &masked,
+            focus: &focus,
+            masks: &input_regions,
+            exclusions: &regions,
+            output_dir: &output_dir,
+            tessdata: model.as_ref().map(|(directory, _)| directory.as_path()),
+        },
+        options,
+        &mut words,
     )?;
     if let Some((directory, expected)) = &model {
         ensure!(
@@ -543,32 +607,22 @@ pub fn refresh_visible_ocr_with_tessdata(
             "OCR model changed during recognition"
         );
     }
-    words.retain(|w| !regions.iter().any(|r| r.intersects(w.bounds)));
-    for word in &mut words {
-        if let Ok(crop) = original.crop(word.bounds)
-            && let Some(ink) = crop.ink_bounds(160)
-        {
-            word.bounds = Rect {
-                x: word.bounds.x + ink.x,
-                y: word.bounds.y + ink.y,
-                w: ink.w,
-                h: ink.h,
-            };
-        }
-    }
     fs::write(
         output.with_extension("json"),
         serde_json::to_vec_pretty(&serde_json::json!({
             "page": page_id, "original_pixel_sha256": page.image_sha256,
             "ocr_pixel_sha256": hash(&masked.pixels), "masks": regions,
             "input_masks": input_regions,
+            "recovery": recovery,
             "model": model.as_ref().map(|(directory, sha256)| serde_json::json!({
                 "directory": directory, "eng_traineddata_sha256": sha256, "oem": 1, "language": "eng" })),
-            "words": words, "method": "tesseract psm 3; explicit LSTM English model when supplied, otherwise system defaults; dense bar fringes removed in auxiliary input; ink refined on original pixels"
+            "words": words, "method": "tesseract psm 3 baseline; optional candidate-independent masked local-strip psm 6/11 recovery recorded separately; explicit LSTM English model when supplied, otherwise system defaults; dense bar fringes removed in auxiliary input only; ink refined on original pixels"
         }))?,
     )?;
     page.words = words;
-    page.proposed_redactions = regions;
+    // Expanded fringes exclude OCR observations only; preserve logical masks
+    // so the target's own OCR-only fringe cannot block adjacent visible text.
+    page.proposed_redactions = input_regions;
     project.save(dir)
 }
 pub fn parse_tsv(tsv: &str) -> Result<Vec<Word>> {

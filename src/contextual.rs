@@ -94,6 +94,7 @@ pub fn visible_context(project: &Project, target: &Target) -> Result<Context> {
                 || gap > 4.0 * target.bounds.h
                 || word.text.is_empty()
                 || word.text.chars().any(char::is_control)
+                || masks.iter().any(|m| m.intersects(b))
                 || masks.iter().any(|m| m.intersects(span))
             {
                 break;
@@ -153,7 +154,7 @@ pub fn visible_context(project: &Project, target: &Target) -> Result<Context> {
         .into(),
         left_word_indices: left.into_iter().map(|(i, _)| i).collect(),
         right_word_indices: right.into_iter().map(|(i, _)| i).collect(),
-        layout_notes: vec![],
+        layout_notes: crate::ocr_recovery::context_notes(project, target)?,
     })
 }
 
@@ -201,6 +202,8 @@ pub struct Config {
     pub sequence_score: bool,
     pub max_compatible: usize,
     pub batch_items: usize,
+    /// Reuse an opt-in JSON-lines provider worker across context batches.
+    pub persistent_provider: bool,
     /// Experimental sequence log score minus weighted physical cost per occurrence.
     /// Zero retains contextual-only ordering and the original report schema.
     pub physical_weight: f64,
@@ -288,7 +291,7 @@ pub fn run(
     let items: Vec<_> = eligible
         .iter()
         .flat_map(|c| {
-            c.observations
+            c.compatible_observations()
                 .iter()
                 .map(|o| json!({"id":c.id,"target":o.target,"text":o.surface}))
         })
@@ -302,7 +305,7 @@ pub fn run(
     let expected: BTreeSet<_> = eligible
         .iter()
         .flat_map(|c| {
-            c.observations
+            c.compatible_observations()
                 .iter()
                 .map(|o| (c.id.clone(), o.target.clone()))
         })
@@ -314,7 +317,7 @@ pub fn run(
     let word_counts: BTreeMap<_, _> = eligible
         .iter()
         .flat_map(|c| {
-            c.observations.iter().map(|o| {
+            c.compatible_observations().iter().map(|o| {
                 (
                     (c.id.clone(), o.target.clone()),
                     o.surface.split_whitespace().count(),

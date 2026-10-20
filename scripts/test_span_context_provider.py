@@ -1,8 +1,13 @@
 # Copyright (C) 2026 Toit contributors.
 import copy
 import importlib.util
+import io
+import json
+import types
 import unittest
+from unittest.mock import Mock, patch
 
+import span_context_provider as provider
 from span_context_provider import decoder_sequence, prepare, score_items
 from test_span_proposal_provider import Tokenizer
 
@@ -36,6 +41,68 @@ class SpanContextTests(unittest.TestCase):
             if modification == 'control': request['items'][0]['text'] = 'partial\ncontrol'
             with self.assertRaises(ValueError):
                 prepare(request, Tokenizer())
+
+    def test_worker_loads_once_preserves_response_provenance_and_flushes_each_frame(self):
+        requests = [self.request(), self.request()]
+        requests[1]['items'] = requests[1]['items'][:1]
+        raw = b''.join(json.dumps(dict(worker_protocol_version=1, request_id=i + 1,
+            request=request)).encode() + b'\n' for i, request in enumerate(requests))
+        provenance = dict(model='verified-test-model')
+        scorer = Mock()
+        scorer.score.side_effect = lambda request: dict(provenance=provenance, items=request['items'])
+        factory = Mock(return_value=scorer)
+        output = io.BytesIO()
+        provider.serve(io.BytesIO(raw), output, 'options', factory)
+        factory.assert_called_once_with('options')
+        self.assertEqual(scorer.score.call_count, 2)
+        frames = [json.loads(line) for line in output.getvalue().splitlines()]
+        self.assertEqual([frame['request_id'] for frame in frames], [1, 2])
+        for frame, request in zip(frames, requests):
+            self.assertEqual(frame['response'], dict(provenance=provenance, items=request['items']))
+
+    def test_worker_rejects_unbounded_unframed_or_repeated_request_ids(self):
+        factory = Mock()
+        malformed = [b'{}', b'{}\n', b'x' * 102 + b'\n',
+            json.dumps(dict(worker_protocol_version=1, request_id=True, request={})).encode() + b'\n']
+        with patch.object(provider, 'LIMIT', 100):
+            for raw in malformed:
+                with self.assertRaises(ValueError):
+                    provider.serve(io.BytesIO(raw), io.BytesIO(), None, factory)
+        factory.assert_not_called()
+        frame = json.dumps(dict(worker_protocol_version=1, request_id=1, request={})).encode() + b'\n'
+        factory.return_value.score.return_value = {}
+        with self.assertRaisesRegex(ValueError, 'envelope'):
+            provider.serve(io.BytesIO(frame * 2), io.BytesIO(), None, factory)
+        with patch.object(provider, 'LIMIT', 10):
+            with self.assertRaisesRegex(ValueError, 'Response exceeds'):
+                provider.encode_response({'response': 'too large'})
+
+    def test_model_verification_and_loading_are_amortized_across_requests(self):
+        torch = types.SimpleNamespace(__version__='test-torch', set_num_threads=Mock())
+        tokenizer_loader, model_loader = Mock(), Mock()
+        tokenizer_loader.from_pretrained.return_value = Tokenizer()
+        model = model_loader.from_pretrained.return_value.eval.return_value
+        transformers = types.SimpleNamespace(__version__='test-transformers',
+            T5TokenizerFast=tokenizer_loader, T5ForConditionalGeneration=model_loader)
+        args = types.SimpleNamespace(model_dir='model', threads=1, context_tokens=64, batch_size=2)
+
+        def score(items, contexts, tokenizer, loaded_model, loaded_torch, batch_size):
+            self.assertIs(loaded_model, model)
+            for item in items:
+                item.update(token_log_score_sum=-2, token_count=2)
+            return dict(unique_contexts=1)
+
+        with patch.dict('sys.modules', torch=torch, transformers=transformers), \
+                patch.object(provider, 'verify_model', return_value={'model': 'verified'}) as verify, \
+                patch.object(provider, 'digest', return_value='source-sha'), \
+                patch.object(provider, 'score_items', side_effect=score):
+            scorer = provider.Scorer(args)
+            first, second = scorer.score(self.request()), scorer.score(self.request())
+        self.assertEqual(first, second)
+        self.assertEqual(first['provenance'], {'model': 'verified'})
+        self.assertEqual(verify.call_count, 2)  # Before and after the single load.
+        tokenizer_loader.from_pretrained.assert_called_once()
+        model_loader.from_pretrained.assert_called_once()
 
     @unittest.skipUnless(importlib.util.find_spec('torch'), 'Run with the model environment for real decoder checks')
     def test_batched_scores_equal_causal_prefix_probabilities_including_end(self):

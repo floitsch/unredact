@@ -3,7 +3,7 @@
 Run these commands from the repository root after installing the native
 dependencies listed in [Build](../README.md#build). The prepared workspace already
 contains the Python environment and pinned T5 weights used below. In a fresh
-workspace, follow [local model setup](../README.md#offline-variable-length-span-completion)
+workspace, follow [local model setup](USAGE.md#offline-variable-length-span-completion)
 first. No model API token is required.
 
 ## Import and locate the masks
@@ -26,7 +26,14 @@ target/release/unredact calibrate --project runs/my-document \
 ```
 
 For mixed typography, use `--block BLOCK_ID` or the size-group workflow in the
-[full instructions](../README.md#analyze-documents).
+[full instructions](USAGE.md#analyze-documents).
+
+For interactive rectangle editing and context previews, run
+`target/release/unredact review --project runs/my-document --page PAGE_ID`
+and open the printed local URL. The [viewer instructions](LOCAL_REVIEW.md)
+explain its overlays and validated JSON downloads. If OCR misses nearby text,
+use the [diagnostic and retry workflow](OCR_RECOVERY.md); refresh OCR before
+calibration.
 
 ## Record the target and candidate text
 
@@ -68,7 +75,7 @@ recalibrating. Give occurrences the same group only when testing an explicit
 shared-identity hypothesis. Use a shared `dependence_key` for copied observations.
 
 Create `candidates.txt` with one complete candidate per line. Alternatively, use
-JSON with identities and aliases; [names and AI hooks](../README.md#names-and-ai-hooks)
+JSON with identities and aliases; [names and AI hooks](USAGE.md#names-and-ai-hooks)
 describes the schema and visible-corpus harvesting. The public-role starter list
 is `data/public-name-seeds.json`; its entries carry source attribution rather than
 inferred redaction identities.
@@ -78,8 +85,8 @@ inferred redaction identities.
 ```sh
 target/release/unredact context-rank \
   --project runs/my-document --group hypothesis-1 \
-  --candidates candidates.txt --paragraph-context --sequence-score \
-  --physical-weight 1 \
+  --candidates candidates.txt \
+  --ranking-preset paragraph-sequence-physical-v1 \
   --provider runs/neural-venv/bin/python \
   --provider-arg scripts/span_context_provider.py \
   --provider-arg=--model-dir=runs/span-model-001/t5-base \
@@ -87,10 +94,17 @@ target/release/unredact context-rank \
 ```
 
 This is the selected configuration in the multidocument language comparison.
-The default CLI physical weight remains zero; the explicit flag matters.
+The default CLI physical weight remains zero; the explicit preset matters.
 The report retains physical costs, language scores, context provenance and ties.
+Add `--persistent-provider` to reuse the loaded T5 model across scoring batches;
+the default starts a fresh provider for each batch. All batches share the timeout.
 If no visible context is available, supply accurate visible context in the target
 specification or use `solve` for a geometry-only analysis.
+
+To make an explicit answer-or-abstain decision from a saved report, use
+`assess` with a separately developed policy, as described in
+[abstention evaluation](ABSTENTION.md). Rankings alone remain hypotheses within
+the supplied vocabulary.
 
 To propose additional candidates from context, run:
 
@@ -128,7 +142,7 @@ target/release/unredact rank-pixelation \
 
 Use a profile calibrated for the same page, without `--learn-spaces` or hinted
 metrics. This command searches shared page grids and includes partial cells.
-[Pixelation instructions](../README.md#pixelated-text) cover
+[Pixelation instructions](USAGE.md#pixelated-text) cover
 diagnostics and combining explicitly linked reports across PDFs.
 
 All results rank hypotheses within the supplied vocabulary. A first-place result

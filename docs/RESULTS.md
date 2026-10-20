@@ -5,6 +5,12 @@ baseline controls on the independent multidocument test. This is a measured
 advantage on the declared benchmark, with supplied candidate vocabularies and mask
 locations. It does not establish recovery accuracy for unknown real redactions.
 
+These are frozen historical results. Subsequent dependency-grouping,
+compatibility and OCR changes have regression tests and bounded exploratory
+checks, but the complete benchmark below has not been rerun with those changes.
+The optional [abstention evaluation](ABSTENTION.md) also uses archived reports;
+its policy is bound to that report generation and language-model provenance.
+
 ## Opaque masks
 
 All 192 held-out spans from eight documents are included. Each vocabulary contains
@@ -87,7 +93,7 @@ PDFs with duplicate/dependence handling. The requested 93,016-parameter font CNN
 is trained and integrated, but remains optional: a real-scan ranking advantage
 over ordinary font search has not been established.
 
-The current binary passes 122 Rust tests, all-target Clippy and the release build.
+The archived evaluation binary passed 122 Rust tests, all-target Clippy and the release build.
 The completion audits check all 552 successful language CLI rankings and all
 1,890 successful pixelation reports against their scores, coverage and ranks.
 All 384 neutral native replays reproduce the saved upstream decisions before

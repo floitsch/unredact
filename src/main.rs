@@ -1,6 +1,6 @@
 // Copyright (C) 2026 Toit contributors.
 use anyhow::{Context, Result, ensure};
-use clap::{Parser, Subcommand};
+use clap::{Parser, Subcommand, ValueEnum};
 use std::{fs, path::PathBuf, time::Duration};
 use unredact::{
     calibration, comparison, harvest, linking, pixelation,
@@ -19,6 +19,24 @@ struct Args {
     #[command(subcommand)]
     command: Cmd,
 }
+#[derive(Debug, Clone, Copy, ValueEnum)]
+enum RankingPreset {
+    /// Benchmark-selected paragraph context, sequence scores, and physical weight 1.
+    #[value(name = "paragraph-sequence-physical-v1")]
+    ParagraphSequencePhysicalV1,
+}
+
+fn ranking_settings(
+    preset: Option<RankingPreset>,
+    paragraph_context: bool,
+    sequence_score: bool,
+    physical_weight: f64,
+) -> (bool, bool, f64) {
+    match preset {
+        Some(RankingPreset::ParagraphSequencePhysicalV1) => (true, true, 1.0),
+        None => (paragraph_context, sequence_score, physical_weight),
+    }
+}
 #[derive(serde::Deserialize)]
 struct PixelationOccurrenceFile {
     id: String,
@@ -33,6 +51,29 @@ struct PixelationLinksFile {
 }
 #[derive(Subcommand)]
 enum Cmd {
+    /// Apply an explicit abstention policy to a saved context ranking.
+    Assess {
+        #[arg(long)]
+        report: PathBuf,
+        #[arg(long)]
+        policy: PathBuf,
+        /// JSON containing attributed font-coverage and link-validity checks.
+        #[arg(long)]
+        checks: Option<PathBuf>,
+        #[arg(long)]
+        output: Option<PathBuf>,
+    },
+    /// Review page pixels, edit rectangles, preview context, and download validated target specs locally.
+    Review {
+        #[arg(long)]
+        project: PathBuf,
+        /// Page ID; defaults to the first imported page.
+        #[arg(long)]
+        page: Option<String>,
+        /// Loopback port; zero chooses an available port.
+        #[arg(long, default_value_t = 0)]
+        port: u16,
+    },
     /// Jointly rank explicitly linked pixelation reports across pages/PDFs; copies count once.
     CombinePixelation {
         #[arg(long)]
@@ -187,6 +228,17 @@ enum Cmd {
         #[arg(long)]
         page: Option<String>,
     },
+    /// Explain missing same-row context for registered targets without changing the project.
+    DiagnoseContext {
+        #[arg(long)]
+        project: PathBuf,
+        #[arg(long, conflicts_with = "target")]
+        group: Option<String>,
+        #[arg(long)]
+        target: Option<String>,
+        #[arg(long)]
+        output: Option<PathBuf>,
+    },
     /// Fit typography using visible words; hold out complete word identities.
     Calibrate {
         #[arg(long)]
@@ -232,6 +284,12 @@ enum Cmd {
         /// Directory containing optional English LSTM model eng.traineddata.
         #[arg(long)]
         tessdata: Option<PathBuf>,
+        /// Retry missing visible context with masked local-strip PSM 6 and 11 OCR.
+        #[arg(long)]
+        retry_context_ocr: bool,
+        /// Maximum missing-context regions to retry (1–64).
+        #[arg(long, default_value_t = 16)]
+        ocr_retry_regions: usize,
     },
     /// Add an explicit target/group hypothesis from a JSON specification.
     Target {
@@ -279,6 +337,9 @@ enum Cmd {
         provider_arg: Vec<String>,
         #[arg(long, default_value_t = 300)]
         timeout_seconds: u64,
+        /// Explicit benchmark-selected settings; conflicts with individual ranking flags.
+        #[arg(long, value_enum, conflicts_with_all = ["paragraph_context", "word_normalization", "sequence_score", "physical_weight"])]
+        ranking_preset: Option<RankingPreset>,
         /// Extend OCR context across geometrically consistent paragraph lines.
         #[arg(long)]
         paragraph_context: bool,
@@ -297,6 +358,9 @@ enum Cmd {
         /// Candidate/occurrence items per provider call; all calls share the timeout.
         #[arg(long, default_value_t = 2048)]
         batch_items: usize,
+        /// Reuse a JSON-lines provider worker across batches (adds --persistent to its arguments).
+        #[arg(long)]
+        persistent_provider: bool,
         #[arg(long)]
         output: Option<PathBuf>,
     },
@@ -372,6 +436,27 @@ enum Cmd {
 }
 fn main() -> Result<()> {
     match Args::parse().command {
+        Cmd::Assess {
+            report,
+            policy,
+            checks,
+            output,
+        } => {
+            let result = unredact::abstention::assess_files(&report, &policy, checks.as_deref())?;
+            let json = serde_json::to_string_pretty(&result)?;
+            if let Some(path) = output {
+                fs::write(path, json)?;
+            } else {
+                println!("{json}");
+            }
+        }
+        Cmd::Review {
+            project,
+            page,
+            port,
+        } => {
+            unredact::review::serve(&project, page.as_deref(), port)?;
+        }
         Cmd::ExportTraining {
             project,
             max_train,
@@ -786,14 +871,60 @@ fn main() -> Result<()> {
             page,
             masks,
             tessdata,
+            retry_context_ocr,
+            ocr_retry_regions,
         } => {
             let regions: Vec<unredact::raster::Rect> = serde_json::from_slice(&fs::read(masks)?)?;
-            project::refresh_visible_ocr_with_tessdata(
+            project::refresh_visible_ocr_with_options(
                 &project,
                 &page,
                 &regions,
                 tessdata.as_deref(),
+                &unredact::ocr_recovery::OcrRecoveryOptions {
+                    retry_missing_context: retry_context_ocr,
+                    max_regions: ocr_retry_regions,
+                },
             )?;
+        }
+        Cmd::DiagnoseContext {
+            project,
+            group,
+            target,
+            output,
+        } => {
+            let data = Project::load(&project)?;
+            let selected: Vec<_> = data
+                .targets
+                .iter()
+                .filter(|t| {
+                    group.as_ref().is_none_or(|g| &t.group == g)
+                        && target.as_ref().is_none_or(|id| &t.id == id)
+                })
+                .collect();
+            ensure!(
+                !selected.is_empty(),
+                "No targets match the requested context diagnosis"
+            );
+            let reports = selected
+                .into_iter()
+                .map(|t| {
+                    Ok(serde_json::json!({
+                        "target": t.id,
+                        "page": t.page,
+                        "diagnostics": unredact::ocr_recovery::diagnose_target(&data, t)?,
+                    }))
+                })
+                .collect::<anyhow::Result<Vec<_>>>()?;
+            let json = serde_json::to_string_pretty(&serde_json::json!({
+                "schema_version": 1,
+                "interpretation": "Same-row visible-context availability and stopping reasons; does not assess OCR text accuracy.",
+                "targets": reports,
+            }))?;
+            if let Some(path) = output {
+                fs::write(path, json)?;
+            } else {
+                println!("{json}");
+            }
         }
         Cmd::Target {
             project,
@@ -811,29 +942,7 @@ fn main() -> Result<()> {
             {
                 *local_spacing = true;
             }
-            p.validate_target(&t)?;
-            unredact::scan_span::validate_pixels(p.page(&t.page)?, &t, &project)?;
-            // A user can mask visible words for evaluation, but must recalibrate without them.
-            let profile = p.profile(&t.profile)?;
-            let page = p.page(&t.page)?;
-            let overlap: Vec<_> = page
-                .words
-                .iter()
-                .filter(|w| {
-                    w.bounds.intersects(t.bounds)
-                        && (profile.training_texts.contains(&w.text)
-                            || profile.validation_texts.contains(&w.text)
-                            || profile.audit_texts.contains(&w.text))
-                })
-                .collect();
-            ensure!(
-                overlap.is_empty()
-                    && profile.spacing.as_ref().is_none_or(|s| s
-                        .samples
-                        .iter()
-                        .all(|sample| !sample.bounds.intersects(t.bounds))),
-                "Target overlaps calibration/validation text. Use a held-out region or remove those words and recalibrate."
-            );
+            unredact::review::validate_target_registration(&p, &project, &t)?;
             p.targets.retain(|x| x.id != t.id);
             p.targets.push(t);
             p.save(&project)?;
@@ -895,14 +1004,22 @@ fn main() -> Result<()> {
             provider,
             provider_arg,
             timeout_seconds,
+            ranking_preset,
             paragraph_context,
             word_normalization,
             sequence_score,
             physical_weight,
             max_compatible,
             batch_items,
+            persistent_provider,
             output,
         } => {
+            let (paragraph_context, sequence_score, physical_weight) = ranking_settings(
+                ranking_preset,
+                paragraph_context,
+                sequence_score,
+                physical_weight,
+            );
             let p = Project::load(&project)?;
             let mut all = vec![];
             for path in candidates {
@@ -923,6 +1040,7 @@ fn main() -> Result<()> {
                     physical_weight,
                     max_compatible,
                     batch_items,
+                    persistent_provider,
                 },
             )?;
             let json = serde_json::to_string_pretty(&report)?;

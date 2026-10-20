@@ -148,9 +148,21 @@ pub struct Ranked {
     pub context_score: Option<f64>,
     pub compatible: bool,
     pub observations: Vec<ObservationScore>,
+    /// Feasible shared models/surfaces when the minimum-cost observations fail
+    /// the compatibility threshold. Ranking costs still use `observations`.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub compatibility_witness: Option<Vec<ObservationScore>>,
     pub source_ids: Vec<String>,
     pub evidence_rank_min: usize,
     pub evidence_rank_max: usize,
+}
+impl Ranked {
+    /// Surfaces to use for language ranking after physical compatibility passes.
+    pub fn compatible_observations(&self) -> &[ObservationScore] {
+        self.compatibility_witness
+            .as_deref()
+            .unwrap_or(&self.observations)
+    }
 }
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Report {
@@ -274,6 +286,11 @@ pub(crate) fn measure_width(
         sigma,
     }))
 }
+struct ScoredObservation {
+    best: ObservationScore,
+    compatible: Option<ObservationScore>,
+}
+
 fn score_one(
     t: &Target,
     c: &Candidate,
@@ -282,8 +299,9 @@ fn score_one(
     mosaic: Option<&MosaicData>,
     fit_index: usize,
     context: WidthContext<'_>,
-) -> Result<Option<ObservationScore>> {
+) -> Result<Option<ScoredObservation>> {
     let mut best: Option<ObservationScore> = None;
+    let mut compatible: Option<ObservationScore> = None;
     for s in c
         .surfaces
         .iter()
@@ -372,11 +390,16 @@ fn score_one(
                 mosaic_fit: selected,
             }
         };
+        if result.standardized_error <= 3.0
+            && compatible.as_ref().is_none_or(|b| result.score < b.score)
+        {
+            compatible = Some(result.clone());
+        }
         if best.as_ref().is_none_or(|b| result.score < b.score) {
             best = Some(result);
         }
     }
-    Ok(best)
+    Ok(best.map(|best| ScoredObservation { best, compatible }))
 }
 
 fn width_score(
@@ -424,29 +447,57 @@ pub(crate) fn independent_targets<'a>(
             .all(|t| target_ids.insert(&t.id)),
         "Target IDs must be unique within a group"
     );
-    let mut targets = vec![];
-    let mut ignored = vec![];
-    let mut dependencies = BTreeSet::new();
-    let mut exact = BTreeSet::new();
-    for t in project.targets.iter().filter(|t| t.group == group) {
+    let mut grouped: Vec<_> = project
+        .targets
+        .iter()
+        .filter(|t| t.group == group)
+        .collect();
+    ensure!(!grouped.is_empty(), "No targets in group {group}");
+    // Sorting fixes both the representative (smallest target ID) and the order
+    // of independent observations, regardless of project target order.
+    grouped.sort_by(|a, b| a.id.cmp(&b.id));
+    let mut parents: Vec<_> = (0..grouped.len()).collect();
+    fn root(parents: &mut [usize], mut index: usize) -> usize {
+        while parents[index] != index {
+            parents[index] = parents[parents[index]];
+            index = parents[index];
+        }
+        index
+    }
+    let mut dependencies = BTreeMap::new();
+    let mut exact = BTreeMap::new();
+    for (index, t) in grouped.iter().enumerate() {
         project.validate_target(t)?;
         let p = project.page(&t.page)?;
-        let identity = format!(
-            "{}:{:.3}:{:.3}:{:.3}:{:.3}",
-            p.image_sha256, t.bounds.x, t.bounds.y, t.bounds.w, t.bounds.h
+        let identity = (
+            &p.image_sha256,
+            [t.bounds.x, t.bounds.y, t.bounds.w, t.bounds.h]
+                // Signed zero describes the same crop; other coordinates must
+                // match exactly rather than being rounded to three decimals.
+                .map(|v| if v == 0.0 { 0 } else { v.to_bits() }),
         );
-        let is_copy = !exact.insert(identity);
-        let is_dependent = t
+        let copy = exact.insert(identity, index);
+        let dependent = t
             .dependence_key
             .as_ref()
-            .is_some_and(|k| !dependencies.insert(k.clone()));
-        if is_copy || is_dependent {
-            ignored.push(t.id.clone());
-        } else {
-            targets.push(t);
+            .and_then(|key| dependencies.insert(key, index));
+        // A target can connect two previously separate components, including
+        // when that target itself will be ignored as an exact duplicate.
+        for previous in [copy, dependent].into_iter().flatten() {
+            let a = root(&mut parents, index);
+            let b = root(&mut parents, previous);
+            parents[a.max(b)] = a.min(b);
         }
     }
-    ensure!(!targets.is_empty(), "No targets in group {group}");
+    let mut targets = vec![];
+    let mut ignored = vec![];
+    for (index, t) in grouped.into_iter().enumerate() {
+        if root(&mut parents, index) == index {
+            targets.push(t);
+        } else {
+            ignored.push(t.id.clone());
+        }
+    }
     Ok((targets, ignored))
 }
 pub fn solve(
@@ -543,14 +594,18 @@ pub fn solve(
     let mut ranked = vec![];
     for candidate in candidates {
         let mut observations = vec![];
+        let mut compatibility_observations = vec![];
         let mut total = 0.0;
         let mut supported = true;
+        let mut compatible = true;
         for (profile_id, occurrences) in &by_profile {
             let profile = project.profile(profile_id)?;
             let mut best: Option<(f64, Vec<ObservationScore>)> = None;
+            let mut best_compatible: Option<(f64, Vec<ObservationScore>)> = None;
             // One typography hypothesis per profile, shared by all its observations.
             for (i, fit) in profile.fits.iter().enumerate() {
                 let mut results = vec![];
+                let mut compatible_results = vec![];
                 let mut valid = true;
                 for t in occurrences {
                     if let Some(s) = score_one(
@@ -565,7 +620,10 @@ pub fn solve(
                             line_spacing: line_spacing.get(&t.id).map(|fits| &fits[i]),
                         },
                     )? {
-                        results.push(s);
+                        results.push(s.best);
+                        if let Some(feasible) = s.compatible {
+                            compatible_results.push(feasible);
+                        }
                     } else {
                         valid = false;
                         break;
@@ -575,6 +633,15 @@ pub fn solve(
                     continue;
                 }
                 let prior = (fit.validation_rmse - profile.fits[0].validation_rmse).max(0.0);
+                // Compatibility is existential over retained models, but one
+                // model must explain every occurrence of this profile. Surface
+                // choices can differ per occurrence, as in minimum-cost scoring.
+                if compatible_results.len() == occurrences.len() {
+                    let score = compatible_results.iter().map(|s| s.score).sum::<f64>() + prior;
+                    if best_compatible.as_ref().is_none_or(|(b, _)| score < *b) {
+                        best_compatible = Some((score, compatible_results));
+                    }
+                }
                 let score = results.iter().map(|s| s.score).sum::<f64>() + prior;
                 if best.as_ref().is_none_or(|(b, _)| score < *b) {
                     best = Some((score, results));
@@ -587,15 +654,24 @@ pub fn solve(
                 supported = false;
                 break;
             }
+            if let Some((_, mut results)) = best_compatible {
+                compatibility_observations.append(&mut results);
+            } else {
+                compatible = false;
+            }
         }
         if supported {
+            let compatibility_witness = (compatible
+                && observations.iter().any(|s| s.standardized_error > 3.0))
+            .then_some(compatibility_observations);
             ranked.push(Ranked {
                 id: candidate.id.clone(),
                 name: candidate.canonical_name.clone(),
                 evidence_score: total,
                 context_score: candidate.context_score,
-                compatible: observations.iter().all(|s| s.standardized_error <= 3.0),
+                compatible,
                 observations,
+                compatibility_witness,
                 source_ids: candidate.source_ids.clone(),
                 evidence_rank_min: 0,
                 evidence_rank_max: 0,
@@ -691,5 +767,5 @@ pub fn solve(
         warnings.push("Line-spacing estimates use visible training pairs on the target row; existing profile uncertainty is retained. Missing or implausible estimates fall back to the profile's spacing and record a reason.".into());
     }
     ranked.truncate(limit);
-    Ok(Report{group:group.into(),status,interpretation:"Compatibility with measured evidence under the selected models; not a recovered or verified identity.".into(),tested_candidates:candidates.len(),independent_observations:targets.len(),ignored_dependent_targets:ignored,compatible_candidates:compatible,best_evidence_ties,candidates:ranked,warnings,pixelation_analysis,calibration_audits,line_spacing})
+    Ok(Report{group:group.into(),status,interpretation:"Compatibility with measured evidence under some retained shared model per profile; not a recovered or verified identity. Evidence costs use the minimum-cost explanation; compatibility_witness records a passing explanation when it differs.".into(),tested_candidates:candidates.len(),independent_observations:targets.len(),ignored_dependent_targets:ignored,compatible_candidates:compatible,best_evidence_ties,candidates:ranked,warnings,pixelation_analysis,calibration_audits,line_spacing})
 }
