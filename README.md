@@ -17,6 +17,46 @@ correct answer supplied among 300 candidates.
 [Detailed usage](docs/USAGE.md) · [Results](docs/RESULTS.md) ·
 [Comparison protocol](docs/COMPARISON.md)
 
+## Examples
+
+### Inspect a target and its visible context
+
+The local viewer shows the original page pixels, an editable target rectangle in
+pink, and the OCR words used as context in cyan. The side panel previews the
+actual Rust context extraction and validates the target before export.
+
+![Actual local viewer showing a marked artificial redaction on a Congressional Record scan, highlighted context words, and validated target settings.](docs/images/local-review.png)
+
+This screenshot uses a **controlled mask on a public scan**, not an original
+government redaction. Start the viewer with
+`target/release/unredact review --project PATH`. [Viewer guide](docs/LOCAL_REVIEW.md).
+
+### Compare candidates—and inspect wrong answers
+
+Below are two actual outputs from the same Congressional Record page. Geometry
+and local T5 rank **“and”** correctly, but prefer **“population”** where the
+known answer is **“university.”** Both experiments supplied the correct answer
+among 300 candidates.
+
+![Two scan crops with artificial black bars and their measured rankings: and ranks first correctly; population ranks above the correct answer university.](docs/images/candidate-ranking.png)
+
+These are two examples from the four-case check that scored **2/4 overall**.
+The figures summarize saved CLI reports; they are not a ranking screen in the
+viewer. Combined scores order candidates and are not probabilities.
+[All four outcomes and source PDF](docs/OCR_RECOVERY.md#exploratory-known-answer-check).
+
+### Rank pixelated text using the surviving image information
+
+In this fresh synthetic demonstration, the solver ranks **“Harper Cedar”** first
+among 400 candidates by comparing rendered text with the observed pixelation.
+The grid is supplied; 21 candidates still pass the physical compatibility filter.
+
+![Actual pixelated synthetic input and measured top-three ranking: Harper Cedar, Harper Reed, and Harper Lake, with lower physical cost ranking first.](docs/images/pixelation.png)
+
+The clear text is a candidate label, not a reconstructed image. Reproduce this
+example with the built-in `benchmark` followed by `solve --group mosaic`.
+[Inputs, provenance, and reproduction commands](docs/images/README.md).
+
 ## What it can do
 
 | Capability | What you get |

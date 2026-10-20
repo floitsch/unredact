@@ -1,0 +1,112 @@
+{
+  "description": "Documentation illustrations from actual saved outputs. Opaque masks are artificial; mosaic uses a synthetic name. Excerpts are not complete reports and cannot be used as assess inputs.",
+  "source_pdf": "https://www.govinfo.gov/content/pkg/GPO-CRECB-1964-pt1/pdf/GPO-CRECB-1964-pt1-2.pdf#page=43",
+  "opaque": [
+    {
+      "truth": "and",
+      "context": "among ourselves, [REDACTED] with all nations.\u201d",
+      "tested": 300,
+      "compatible": 50,
+      "report": "runs/ocr-recovery-review-001/ranking-four/congress-1964-p43/c-0029d774a76cac8a279fb11e0c6217d6f9c2e2030c7ecbb971cf2620ee24a8d4/context-result.json",
+      "report_sha256": "4527e33c26167863b55f9ffb3e67a5329dcf6bbf27e25e46ccdb96e1eddfefdb",
+      "image": {
+        "file": "opaque-and.png",
+        "sha256": "7afdcb4ad6f891982b2c93fe010a2b61e0bf6ecde5cba746186c04aa121ebb96",
+        "source_image": "runs/multidoc-benchmark-001/images/congress-1964-p43-opaque.pgm",
+        "source_file_sha256": "24f09f97abc633e8db78b2bf80063435090a6ae89ce897d7e7c5ab6bb533e109",
+        "crop_xyxy": [
+          700,
+          2005,
+          1200,
+          2053
+        ]
+      },
+      "top": [
+        {
+          "name": "and",
+          "combined_score": -2.8084165693974903
+        },
+        {
+          "name": "all",
+          "combined_score": -11.121653840236725
+        },
+        {
+          "name": "over",
+          "combined_score": -12.086562178782028
+        }
+      ]
+    },
+    {
+      "truth": "university",
+      "context": "men and women of our great [REDACTED] centers\u2014more concerned with",
+      "tested": 300,
+      "compatible": 130,
+      "report": "runs/ocr-recovery-review-001/ranking-four/congress-1964-p43/c-4595b6345755087a2fba0b17494a77eb3c0046104749cfd6efd0da0104324cdc/context-result.json",
+      "report_sha256": "1907a568868b21801b920c90d90223d6cf2c4fbd2d5dc306ec965d869bb5836f",
+      "image": {
+        "file": "opaque-university.png",
+        "sha256": "4d8d03ed444427b1d5477177992b88024ac1c558bbb272ec02b795149506fa13",
+        "source_image": "runs/multidoc-benchmark-001/images/congress-1964-p43-opaque.pgm",
+        "source_file_sha256": "24f09f97abc633e8db78b2bf80063435090a6ae89ce897d7e7c5ab6bb533e109",
+        "crop_xyxy": [
+          1271,
+          200,
+          1845,
+          271
+        ]
+      },
+      "top": [
+        {
+          "name": "population",
+          "combined_score": -9.376108942945038
+        },
+        {
+          "name": "university",
+          "combined_score": -10.002794520721476
+        },
+        {
+          "name": "resource",
+          "combined_score": -11.080367394497205
+        }
+      ]
+    }
+  ],
+  "mosaic": {
+    "truth": "Harper Cedar",
+    "tested": 400,
+    "compatible": 21,
+    "block": 5,
+    "report": "runs/readme-examples-001/mosaic-result.json",
+    "report_sha256": "f9e0895da3d7883fbbdb073deb9d855e88ba99b2c2ddd29bfaa278733918cdf3",
+    "image": {
+      "file": "mosaic-input.png",
+      "sha256": "b765ecf5e1b0802ea79521c2e46572f0fb5b9444be3d84c49b010a4c4cf28287",
+      "source_image": "runs/readme-examples-001/demo/pages/bench-0.pgm",
+      "source_file_sha256": "2cb5cbf8eae3dd061f9f7b5dd080170e138a2d95e13fec884002027b9f957558",
+      "crop_xyxy": [
+        500,
+        1900,
+        800,
+        1955
+      ]
+    },
+    "top": [
+      {
+        "name": "Harper Cedar",
+        "evidence_score": 0.07611268939393939,
+        "image_rmse": 3.121285671389955
+      },
+      {
+        "name": "Harper Reed",
+        "evidence_score": 2.336387732764354,
+        "image_rmse": 16.749988692895325
+      },
+      {
+        "name": "Harper Lake",
+        "evidence_score": 2.4948602136210383,
+        "image_rmse": 16.821973364584426
+      }
+    ]
+  },
+  "binary_sha256": "5c57f8cf36cb0b251e576ce3648bb46420f52470e2b58c315d6e8ee1994a5be5"
+}

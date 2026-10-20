@@ -1,0 +1,10 @@
+{
+  "project_path": "runs/ocr-recovery-review-001/ranking-four/congress-1964-p43/c-0029d774a76cac8a279fb11e0c6217d6f9c2e2030c7ecbb971cf2620ee24a8d4/project",
+  "project_sha256": "9cd8b4120d2e5df2ef309850585cf42d93112f1d1a333555e583398bd1d3932a",
+  "binary_sha256": "5c57f8cf36cb0b251e576ce3648bb46420f52470e2b58c315d6e8ee1994a5be5",
+  "context_preview": "among ourselves, [REDACTED] with all nations.\u201d",
+  "zoom_percent": 75,
+  "calibration_overlay": false,
+  "paragraph_context": true,
+  "description": "Screenshot of the running local viewer; no DOM or pixel edits."
+}
